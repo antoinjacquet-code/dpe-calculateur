@@ -1,0 +1,1552 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bilan Énergétique – Estimation gratuite</title>
+  <style>
+    @font-face { font-family:'Marianne'; src:url('https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.12.1/dist/fonts/Marianne-Regular.woff2') format('woff2'); font-weight:400; font-style:normal; font-display:swap; }
+    @font-face { font-family:'Marianne'; src:url('https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.12.1/dist/fonts/Marianne-Medium.woff2') format('woff2'); font-weight:500; font-style:normal; font-display:swap; }
+    @font-face { font-family:'Marianne'; src:url('https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.12.1/dist/fonts/Marianne-Bold.woff2') format('woff2'); font-weight:700; font-style:normal; font-display:swap; }
+    @font-face { font-family:'Marianne'; src:url('https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@1.12.1/dist/fonts/Marianne-ExtraBold.woff2') format('woff2'); font-weight:800; font-style:normal; font-display:swap; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Marianne', arial, sans-serif; background: #ffffff; color: #1e1e1e; font-size: 15px; min-height: 100vh; line-height: 1.6; }
+
+    .hero-tricolor { height:6px; display:flex; }
+    .hero-tricolor-b { flex:1; background:#003189; }
+    .hero-tricolor-w { flex:1; background:#ffffff; border-top:1px solid #e5e5e5; border-bottom:1px solid #e5e5e5; }
+    .hero-tricolor-r { flex:1; background:#e1000f; }
+    .hero { background: #fff; border-bottom: 1px solid #e5e5e5; padding: 22px 32px 24px; }
+    .hero-inner { max-width: 820px; margin: 0 auto; display:flex; align-items:center; gap:20px; flex-wrap:wrap; }
+    .hero-rf { font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#6b7280; line-height:1.5; white-space:nowrap; }
+    .hero-divider { width:1px; height:40px; background:#d1d5db; flex-shrink:0; }
+    .hero-content { flex:1; min-width:0; }
+    .hero-tag { display:inline-block; font-size:10px; font-weight:700; letter-spacing:.8px; text-transform:uppercase; color:#003189; background:#eef2ff; border:1px solid #c5d5f5; border-radius:3px; padding:2px 8px; margin-bottom:8px; }
+    .hero h1 { font-size:24px; font-weight:700; color:#161616; letter-spacing:-.2px; line-height:1.25; }
+    .hero-amp { color:#003189; }
+    .hero-sub { font-size:13px; color:#6b7280; margin-top:5px; font-weight:400; }
+
+    .main-wrap { max-width: 820px; margin: 32px auto 48px; padding: 0 14px; }
+
+    .prog-bar { display: none !important; }
+    .prog-step { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; position: relative; min-width: 50px; }
+    .prog-step:not(:last-child)::after { content:''; position:absolute; top:13px; left:60%; width:80%; height:2px; background:#b8d4f8; z-index:0; }
+    .prog-dot { width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:800; z-index:1; position:relative; transition:all .3s; }
+    .prog-dot.done   { background:#0063CB; color:white; }
+    .prog-dot.active { background:#0063CB; color:white; box-shadow:0 0 0 4px rgba(0,99,203,.2); }
+    .prog-dot.todo   { background:#b8d4f8; color:#5a8aaa; }
+    .prog-lbl { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:#8ab8a0; white-space:nowrap; }
+    .prog-lbl.active,.prog-lbl.done { color:#0063CB; }
+
+    .form-card { background:white; border-radius:14px; padding:28px 32px 32px; box-shadow:0 4px 24px rgba(0,0,0,.08); }
+    .step-title { font-size:17px; font-weight:700; color:#1a2e3b; margin-bottom:24px; padding-bottom:14px; border-bottom:1.5px solid #eef2ff; }
+
+    .q-row { display:flex; align-items:flex-start; gap:18px; margin-bottom:20px; }
+    .q-label { min-width:200px; max-width:200px; font-size:13px; font-weight:700; color:#4a6070; padding-top:12px; line-height:1.35; }
+    .q-options { flex:1; display:flex; flex-wrap:wrap; gap:8px; }
+    .q-sep { height:1px; background:#f0f8f3; margin:6px 0 18px; }
+    .hidden { display: none !important; }
+
+    .err-box { background:#fff0f0; border:1.5px solid #ffaaaa; border-radius:9px; padding:10px 14px; color:#c00; font-size:13px; font-weight:600; margin-bottom:16px; display:none; }
+    .err-box.show { display:block; }
+
+    .vig { width:128px; min-height:96px; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; text-align:center; padding:12px 8px 10px; gap:7px; border:1.5px solid #c5cfe8; border-radius:10px; cursor:pointer; background:white; font-size:11.5px; font-weight:600; color:#3a5060; transition:all .18s; user-select:none; line-height:1.3; }
+    .vig:hover   { border-color:#0063CB; background:#f0f4ff; color:#003189; }
+    .vig:hover .ico-box { background:#b8d4ff; }
+    .vig.sel     { border-color:#0063CB; background:#dce9ff; color:#001f5e; }
+    .vig.sel .ico-box { background:#a0c4ff; }
+    .vig.jnsp { border-style:dashed; border-color:#b8ccda; color:#7a9aaa; font-style:italic; font-size:11px; }
+    .vig.jnsp:hover  { border-color:#aabbc8; background:#f8fbfd; }
+    .vig.jnsp.sel    { border-color:#7ab8d0; background:#f0f4ff; color:#5a8898; }
+    .vig.jnsp .ico-box { background:#eef4f8; }
+
+    .ico-box { width:44px; height:44px; background:#dce8ff; border-radius:9px; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:background .18s; }
+    .ico-box svg { width:24px; height:24px; display:block; }
+
+    .dpe-inline-wrap { display:flex; align-items:center; gap:10px; flex:1; flex-wrap:wrap; }
+    .dpe-select { border:1.5px solid #c5cfe8; border-radius:9px; padding:10px 36px 10px 14px; font-size:13px; color:#2c3e50; background:white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%230063CB' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 12px center; appearance:none; outline:none; cursor:pointer; font-weight:700; }
+    .dpe-select:focus { border-color:#0063CB; }
+    .dpe-badge { width:36px; height:36px; border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:900; font-family:'Arial Black','Arial Bold',sans-serif; -webkit-font-smoothing:antialiased; color:white; flex-shrink:0; }
+    .dpe-badge.A{background:#00882d} .dpe-badge.B{background:#52b153} .dpe-badge.C{background:#c2d12b;color:#333}
+    .dpe-badge.D{background:#f4c400;color:#333} .dpe-badge.E{background:#f39200} .dpe-badge.F{background:#e2001a} .dpe-badge.G{background:#8b0000}
+
+    .styled-select select { width:100%; border:1.5px solid #c5cfe8; border-radius:9px; padding:11px 40px 11px 14px; font-size:13px; color:#2c3e50; background:white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%230063CB' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 14px center; appearance:none; outline:none; cursor:pointer; }
+    .styled-select select:focus { border-color:#0063CB; }
+
+    .counter { display:flex; align-items:center; border:1.5px solid #c5cfe8; border-radius:9px; overflow:hidden; height:44px; }
+    .cbtn { width:42px; height:100%; background:#f0f4ff; border:none; font-size:22px; cursor:pointer; color:#0063CB; display:flex; align-items:center; justify-content:center; transition:background .15s; font-weight:300; }
+    .cbtn:hover { background:#b8d4ff; }
+    .cinput { width:72px; height:100%; border:none; border-left:1.5px solid #c5cfe8; border-right:1.5px solid #c5cfe8; text-align:center; font-size:16px; font-weight:700; color:#2c3e50; outline:none; }
+    .cunit { padding:0 12px; color:#7a9aaa; font-size:13px; font-weight:500; }
+    .jnsp-link { font-size:12px; color:#0063CB; cursor:pointer; text-decoration:underline; align-self:center; margin-left:4px; white-space:nowrap; }
+    .jnsp-link.on { color:#aabbc8; text-decoration:none; font-style:italic; }
+
+    .travaux-grid { display:flex; flex-wrap:wrap; gap:8px; }
+    .travaux-item { display:flex; align-items:center; gap:7px; padding:8px 12px; border:1.5px solid #c5cfe8; border-radius:8px; cursor:pointer; font-size:12px; font-weight:600; color:#4a6070; transition:all .18s; user-select:none; }
+    .travaux-item:hover { border-color:#0063CB; background:#f0f4ff; }
+    .travaux-item.checked { border-color:#0063CB; background:#dce9ff; color:#001f5e; }
+    .travaux-item::before { content:''; width:16px; height:16px; border:1.5px solid #c5cfe8; border-radius:4px; display:inline-block; flex-shrink:0; }
+    .travaux-item.checked::before { background:#0063CB; border-color:#0063CB; content:'✓'; color:white; font-size:11px; font-weight:800; display:inline-flex; align-items:center; justify-content:center; }
+
+    .nav-row { display:flex; gap:12px; margin-top:28px; border-top:1px solid #eef2ff; padding-top:20px; }
+    .btn-next { flex:1; background:#0063CB; color:white; border:none; border-radius:9px; padding:15px; font-size:15px; font-weight:800; cursor:pointer; transition:background .18s; }
+    .btn-next:hover { background:#004f9f; }
+    .btn-back { background:white; color:#0063CB; border:1.5px solid #0063CB; border-radius:9px; padding:13px 20px; font-size:14px; font-weight:700; cursor:pointer; }
+    .btn-back:hover { background:#f0f4ff; }
+    .info-tip { font-size:11px; color:#7a9aaa; font-style:italic; padding-top:8px; }
+
+    /* ══ RÉSULTATS ══ */
+    .res-header { background:#eef2ff; border-radius:14px 14px 0 0; padding:28px 24px 24px; text-align:center; border:2px solid #d5deff; border-bottom:none; }
+    .res-header-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1.2px; color:#003189; margin-bottom:14px; }
+    .res-score-row { display:flex; align-items:center; justify-content:center; gap:20px; flex-wrap:wrap; margin-bottom:14px; }
+    .et-big { display:inline-flex; align-items:center; justify-content:center; border-radius:14px; width:108px; height:86px; box-shadow:0 6px 24px rgba(0,0,0,.18); flex-shrink:0; font-family:'Arial Black','Arial Bold',Gadget,'Helvetica Neue',sans-serif; font-size:66px; line-height:1; font-weight:900; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; text-rendering:geometricPrecision; }
+    .et-A{background:#00882d;color:white} .et-B{background:#52b153;color:white}
+    .et-C{background:#c2d12b;color:#333} .et-D{background:#f4c400;color:#333}
+    .et-E{background:#f39200;color:white} .et-F{background:#e2001a;color:white} .et-G{background:#8b0000;color:white}
+    .res-vals { text-align:left; }
+    .res-ep  { font-size:22px; font-weight:800; color:#1a2e3b; line-height:1.2; }
+    .res-ges { font-size:12px; color:#5a7080; margin-top:2px; }
+    .res-fiab { display:inline-block; margin-top:8px; background:rgba(0,49,137,.08); border:1px solid rgba(0,49,137,.15); border-radius:20px; padding:4px 14px; font-size:13px; font-weight:700; color:#003189; }
+    .res-compare { font-size:13px; color:#5a7080; margin-top:10px; }
+    .res-body { background:white; border-radius:0 0 14px 14px; padding:24px 28px; box-shadow:0 4px 24px rgba(0,0,0,.08); border:2px solid #d5deff; border-top:none; }
+    .alert-inlouable { display:flex; align-items:flex-start; gap:14px; background:#fff0f0; border:2px solid #e2001a; border-radius:10px; padding:14px 18px; margin-bottom:18px; }
+    .alert-inlouable-ico { font-size:24px; flex-shrink:0; line-height:1; }
+    .alert-inlouable-txt { flex:1; }
+    .alert-inlouable-title { font-size:14px; font-weight:700; color:#c00; margin-bottom:4px; }
+    .alert-inlouable-desc { font-size:12.5px; color:#7a0000; line-height:1.5; }
+    .alert-bientot { background:#fff7f0; border-color:#f39200; }
+    .alert-bientot .alert-inlouable-title { color:#b84000; }
+    .alert-bientot .alert-inlouable-desc { color:#7a3000; }
+
+    /* Amélioration cards */
+    .amelio-title { font-size:14px; font-weight:700; color:#1a2e3b; margin-bottom:14px; padding-bottom:10px; border-bottom:1.5px solid #eef2ff; }
+    .amelio-card { border:1.5px solid #ddeee6; border-radius:12px; margin-bottom:12px; overflow:hidden; transition:border-color .2s; background:white; }
+    .amelio-card:hover { border-color:#0063CB; }
+    .amelio-card.pack { border-color:#b8d8c8; }
+    .amelio-card-top { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 16px 8px; }
+    .amelio-card.pack .amelio-card-top { background:#f5f8ff; }
+    .amelio-name { font-size:13px; font-weight:700; color:#1a2e3b; }
+    .amelio-letters { display:flex; align-items:center; gap:5px; flex-shrink:0; }
+    .et-sm { display:inline-flex; align-items:center; justify-content:center; width:30px; height:24px; border-radius:4px; font-size:14px; font-weight:900; font-family:'Arial Black','Arial Bold',sans-serif; -webkit-font-smoothing:antialiased; }
+    .amelio-arr { color:#aabbc8; font-size:16px; }
+    .amelio-works { font-size:11px; color:#5a7080; line-height:1.6; padding:0 16px 10px; }
+    .amelio-prices { display:flex; border-top:1px solid #eef2ff; }
+    .price-col { flex:1; padding:10px 14px; border-right:1px solid #eef2ff; min-width:0; }
+    .price-col:last-child { border-right:none; }
+    .price-lbl { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:#8aabb8; margin-bottom:4px; white-space:nowrap; }
+    .price-gross { font-size:12.5px; font-weight:800; color:#1a2e3b; }
+    .price-aide { font-size:12.5px; font-weight:800; color:#0052a3; }
+    .price-net { font-size:12.5px; font-weight:800; color:#c05010; }
+    .price-sav { font-size:12.5px; font-weight:800; color:#003189; }
+    .price-unknown { font-size:10.5px; color:#9ab8c8; font-style:italic; }
+    .savings-banner { display:flex; align-items:center; gap:6px; padding:7px 14px; background:#eef2ff; border-top:1px solid #d5e3ff; font-size:11.5px; font-weight:700; color:#003189; }
+    .amelio-tags { display:flex; align-items:center; gap:6px; padding:7px 14px; background:#f7f9ff; border-top:1px solid #eef2ff; flex-wrap:wrap; }
+    .amelio-aide-tag { display:inline-block; font-size:10px; font-weight:700; background:#dce9ff; color:#003189; border-radius:5px; padding:2px 7px; }
+    .amelio-cat-tag { display:inline-block; font-size:10px; font-weight:700; border-radius:5px; padding:2px 7px; }
+    .cat-tres_modeste { background:#d0eeff; color:#004870; }
+    .cat-modeste { background:#dce8ff; color:#002870; }
+    .cat-intermediaire { background:#fff3cc; color:#806000; }
+    .cat-aise { background:#ffe8d0; color:#803000; }
+    .fen-row { display:none !important; }
+    .fen-row .cbtn { width:50px; }
+    .fen-row .cinput { width:80px; font-size:18px; }
+    .amelio-none { background:#f7f9ff; border-radius:10px; padding:20px; text-align:center; color:#7a9aaa; font-size:13px; }
+    .target-section { margin-bottom:20px; }
+    .target-header { display:flex; align-items:center; gap:10px; padding:10px 0 8px; border-bottom:2px solid #eaeaea; margin-bottom:10px; }
+    .target-header-lbl { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.6px; color:#7a9aaa; }
+    .target-header-cl { font-size:18px; font-weight:900; font-family:'Arial Black','Arial Bold',sans-serif; -webkit-font-smoothing:antialiased; display:inline-flex; align-items:center; justify-content:center; width:36px; height:30px; border-radius:6px; }
+    .target-header-desc { font-size:13px; font-weight:700; color:#1e1e1e; margin-left:2px; }
+    /* Profil revenus */
+    .rev-info { font-size:11px; color:#7a9aaa; margin-top:4px; line-height:1.5; }
+    .aide-section-title { font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.6px; color:#0063CB; background:#f0f4ff; border-left:3px solid #0063CB; padding:8px 12px; border-radius:0 6px 6px 0; margin-bottom:16px; }
+
+    /* Détail collapsible */
+    details.res-detail { margin:16px 0; }
+    details.res-detail summary { font-size:12px; color:#0063CB; cursor:pointer; font-weight:600; padding:8px 0; user-select:none; list-style:none; display:flex; align-items:center; gap:6px; }
+    details.res-detail summary::before { content:'▶'; font-size:9px; transition:transform .2s; }
+    details.res-detail[open] summary::before { transform:rotate(90deg); }
+    .scale-title { font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.6px; color:#8aabb8; margin-bottom:10px; margin-top:12px; }
+    .scale-row { display:flex; align-items:center; gap:8px; margin-bottom:5px; }
+    .scale-lbl { width:26px; height:20px; border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:800; color:white; flex-shrink:0; }
+    .scale-bg { flex:1; height:18px; background:#eef4f8; border-radius:4px; overflow:hidden; }
+    .scale-fill { height:100%; border-radius:4px; width:0; transition:width 1s ease; }
+    .scale-val { width:46px; text-align:right; font-size:10px; color:#9ab8c8; font-weight:600; }
+    .detail { background:#f7f9ff; border-radius:10px; padding:14px 16px; margin-top:8px; }
+    .drow { display:flex; justify-content:space-between; padding:6px 0; font-size:13px; border-bottom:1px solid #edf7f2; }
+    .drow:last-child { border-bottom:none; font-weight:700; font-size:14px; }
+    .drow span:first-child { color:#5a7080; }
+    .drow span:last-child  { font-weight:600; color:#1a2e3b; }
+    .hyp-box { font-size:11px; color:#c07000; background:#fff8e8; border:1px solid #f0d090; border-radius:7px; padding:10px 14px; margin-top:12px; line-height:1.7; }
+    .res-actions { display:flex; gap:10px; margin-top:20px; }
+    .btn-restart { flex:1; background:white; color:#0063CB; border:1.5px solid #0063CB; border-radius:9px; padding:13px; font-size:14px; font-weight:700; cursor:pointer; }
+    .btn-print   { flex:1; background:#0063CB; color:white; border:none; border-radius:9px; padding:13px; font-size:14px; font-weight:700; cursor:pointer; }
+    .disclaimer  { text-align:center; font-size:11px; color:#aabbc8; margin-top:14px; line-height:1.6; }
+
+    /* ══ MODAL TRAVAUX ══ */
+    .modal-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,.55); z-index:1000; display:flex; align-items:center; justify-content:center; padding:16px; animation:fadeIn .2s; }
+    @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+    .modal-box { background:white; border-radius:18px; max-width:560px; width:100%; max-height:92vh; overflow-y:auto; box-shadow:0 24px 64px rgba(0,0,0,.28); animation:slideUp .22s; }
+    @keyframes slideUp { from{transform:translateY(30px);opacity:0} to{transform:translateY(0);opacity:1} }
+    .modal-header { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; padding:20px 22px 14px; border-bottom:1px solid #eef2ff; position:sticky; top:0; background:white; border-radius:18px 18px 0 0; z-index:1; }
+    .modal-title { font-size:15px; font-weight:700; color:#1a2e3b; line-height:1.3; }
+    .modal-close { background:#f0f4ff; border:none; font-size:18px; color:#5a8070; cursor:pointer; width:32px; height:32px; border-radius:8px; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+    .modal-close:hover { background:#dce8ff; }
+    .modal-body { padding:18px 22px 24px; }
+    .modal-letters { display:flex; align-items:center; gap:9px; margin-bottom:14px; }
+    .modal-desc { font-size:13px; color:#4a6070; line-height:1.75; margin-bottom:18px; background:#f7f9ff; border-radius:10px; padding:12px 14px; border-left:3px solid #0063CB; }
+    .photos-title { font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.6px; color:#8aabb8; margin-bottom:10px; }
+    .photos-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:8px; margin-bottom:20px; }
+    .photo-card { border-radius:10px; overflow:hidden; position:relative; aspect-ratio:4/3; background:#e8f5ef; }
+    .photo-card img { width:100%; height:100%; object-fit:cover; display:block; }
+    .photo-caption { position:absolute; bottom:0; left:0; right:0; background:linear-gradient(transparent, rgba(21,95,58,.88)); color:white; font-size:9.5px; font-weight:700; padding:14px 8px 6px; text-align:center; letter-spacing:.3px; text-transform:uppercase; }
+    .modal-prices { display:flex; border:1.5px solid #eef2ff; border-radius:10px; overflow:hidden; margin-bottom:18px; }
+    .modal-prices .price-col { padding:12px 14px; border-right:1px solid #eef2ff; flex:1; min-width:0; }
+    .modal-prices .price-col:last-child { border-right:none; }
+    .btn-artisan { width:100%; background:linear-gradient(135deg,#0063CB,#003189); color:white; border:none; border-radius:11px; padding:16px; font-size:15px; font-weight:800; cursor:pointer; letter-spacing:.2px; transition:opacity .18s; display:flex; align-items:center; justify-content:center; gap:8px; }
+    .btn-artisan:hover { opacity:.88; }
+    .btn-artisan-note { text-align:center; font-size:11px; color:#8aabb8; margin-top:8px; }
+    .amelio-card { cursor:pointer; }
+    .amelio-card-expand { font-size:11px; color:#0063CB; font-weight:700; padding:5px 16px 10px; display:flex; align-items:center; gap:4px; }
+
+    /* ══ DPE EXPERT ══ */
+    .dpe-expert-wrap { margin-top:16px; }
+    .location-msg { margin-top:12px; padding:10px 16px; border-radius:8px; font-size:13px; font-weight:600; line-height:1.5; text-align:left; max-width:480px; margin-left:auto; margin-right:auto; }
+    .location-msg.interdit { background:#fff0f0; border:1.5px solid #e2001a; color:#c00020; }
+    .location-msg.bientot { background:#fff7f0; border:1.5px solid #f39200; color:#b84000; }
+    .location-msg.ok { background:#f0fff8; border:1.5px solid #52b153; color:#1a5030; }
+    .aide-info-banner { background:#fff8e6; border:1.5px solid #f0d080; border-radius:9px; padding:10px 16px; font-size:12.5px; color:#7a5000; margin-bottom:14px; }
+    .btn-dpe-expert { display:inline-flex; align-items:center; gap:14px; background:#0063CB; border:none; color:white; border-radius:10px; padding:16px 24px; font-size:14px; font-weight:700; cursor:pointer; transition:background .18s; width:100%; max-width:480px; text-align:left; margin-top:14px; box-shadow:0 4px 14px rgba(0,99,203,.25); }
+    .btn-dpe-expert:hover { background:#004f9f; }
+    .btn-dpe-expert-ico { width:40px; height:40px; background:rgba(255,255,255,.18); border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .btn-dpe-expert-txt { line-height:1.4; }
+    .btn-dpe-expert-sub { font-size:11.5px; font-weight:400; color:rgba(255,255,255,.8); display:block; margin-top:2px; }
+
+    /* ══ RÉSULTATS layout ══ */
+    .res-header { padding:32px 28px 28px; }
+    .res-score-row { gap:28px; }
+    .res-section-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; padding-bottom:10px; border-bottom:1.5px solid #eef2ff; }
+    .res-section-title { font-size:15px; font-weight:700; color:#1a2e3b; }
+    .res-section-count { font-size:12px; color:#8aabb8; font-weight:600; }
+
+    @media(max-width:600px){
+      .q-row { flex-direction:column; gap:8px; }
+      .q-label { min-width:unset; max-width:unset; padding-top:0; }
+      .form-card { padding:18px 14px; }
+      .vig { width:calc(50% - 4px); }
+      .amelio-right { width:90px; }
+    }
+
+    @media print {
+      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+      body { background: white; font-size: 11px; }
+      .hero, .prog-bar { display: none !important; }
+      #step1, #step2, #step3, #step4, #step5 { display: none !important; }
+      .main-wrap { margin: 0; padding: 0; max-width: 100%; }
+      #step6 { display: block !important; }
+      .res-header { border-radius: 4px 4px 0 0; }
+      .res-body { box-shadow: none; padding: 10px 14px; }
+      .res-actions, .disclaimer { display: none !important; }
+      details.res-detail { display: block !important; }
+      details.res-detail summary { display: none !important; }
+      details.res-detail > * { display: block !important; }
+      .amelio-card { break-inside: avoid; margin-bottom: 5px; }
+      .amelio-card-top { padding: 8px 12px 6px; }
+      .amelio-works { font-size: 10px; line-height: 1.4; padding: 0 12px 6px; }
+      .price-col { padding: 5px 10px; }
+      .price-gross, .price-aide, .price-net { font-size: 10px; }
+      .amelio-tags { padding: 4px 10px; }
+      .amelio-title { font-size: 12px; margin-bottom: 8px; padding-bottom: 6px; }
+      .hyp-box { font-size: 10px; padding: 7px 10px; }
+      .scale-row { margin-bottom: 3px; }
+      .detail { padding: 8px 10px; }
+      .drow { padding: 4px 0; font-size: 11px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="hero-tricolor"><div class="hero-tricolor-b"></div><div class="hero-tricolor-w"></div><div class="hero-tricolor-r"></div></div>
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-rf">France<br>Diagnostique</div>
+    <div class="hero-divider"></div>
+    <div class="hero-content">
+      <div class="hero-tag">Outil gratuit</div>
+      <h1>Bilan Énergétique &amp; Travaux</h1>
+      <div class="hero-sub">Estimez votre DPE et vos travaux de rénovation en quelques minutes</div>
+    </div>
+  </div>
+</div>
+
+<div class="main-wrap">
+
+  <div class="prog-bar">
+    <div class="prog-step"><div class="prog-dot active" id="pd1">1</div><div class="prog-lbl active" id="pl1">Logement</div></div>
+    <div class="prog-step"><div class="prog-dot todo"   id="pd2">2</div><div class="prog-lbl"        id="pl2">Bâtiment</div></div>
+    <div class="prog-step"><div class="prog-dot todo"   id="pd3">3</div><div class="prog-lbl"        id="pl3">Enveloppe</div></div>
+    <div class="prog-step"><div class="prog-dot todo"   id="pd4">4</div><div class="prog-lbl"        id="pl4">Chauffage</div></div>
+    <div class="prog-step"><div class="prog-dot todo"   id="pd5">5</div><div class="prog-lbl"        id="pl5">Aides</div></div>
+    <div class="prog-step"><div class="prog-dot todo"   id="pd6">6</div><div class="prog-lbl"        id="pl6">Résultat</div></div>
+  </div>
+
+  <!-- ÉTAPE 1 -->
+  <div class="form-card" id="step1">
+    <div class="step-title">Mon logement</div>
+    <div class="err-box" id="err1">Veuillez sélectionner le type de logement (Maison ou Appartement) avant de continuer.</div>
+
+    <div class="q-row">
+      <div class="q-label">DPE actuel</div>
+      <div class="q-options" id="opt_dpe_connu"></div>
+    </div>
+    <div class="q-row hidden" id="row_dpe_actuel">
+      <div class="q-label">Lettre DPE</div>
+      <div class="dpe-inline-wrap">
+        <select class="dpe-select" id="dpe_actuel_select" onchange="onDpeSelectChange()">
+          <option value="">— Choisissez —</option>
+          <option value="A">A — Très performant (≤ 70 kWh/m².an)</option>
+          <option value="B">B — Performant (71–110)</option>
+          <option value="C">C — Assez performant (111–180)</option>
+          <option value="D">D — Peu performant (181–250)</option>
+          <option value="E">E — Énergivore (251–330)</option>
+          <option value="F">F — Très énergivore (331–420)</option>
+          <option value="G">G — Extrêmement énergivore (&gt; 420)</option>
+        </select>
+        <div class="dpe-badge hidden" id="dpe_badge"></div>
+      </div>
+    </div>
+    <div class="q-sep"></div>
+
+    <div class="q-row">
+      <div class="q-label">Vous êtes</div>
+      <div class="q-options" id="opt_statut"></div>
+    </div>
+    <div class="q-sep"></div>
+
+    <div class="q-row">
+      <div class="q-label">Type de logement <span style="color:#e04040">*</span></div>
+      <div class="q-options" id="opt_type"></div>
+    </div>
+    <div class="q-sep"></div>
+
+    <div class="q-row">
+      <div class="q-label">Année de construction</div>
+      <div class="q-options" id="opt_annee"></div>
+    </div>
+    <div class="q-sep"></div>
+
+    <div class="q-row">
+      <div class="q-label">Surface habitable</div>
+      <div style="display:flex;align-items:center;gap:10px;flex:1">
+        <div class="counter">
+          <button class="cbtn" onclick="chg('surface',-5)">−</button>
+          <input class="cinput" type="number" id="surface" value="80" min="15" max="600"/>
+          <button class="cbtn" onclick="chg('surface',5)">+</button>
+        </div>
+        <span class="cunit">m²</span>
+      </div>
+    </div>
+    <div class="q-sep"></div>
+
+    <div class="q-row">
+      <div class="q-label">Département</div>
+      <div class="styled-select" style="flex:1">
+        <select id="departement">
+          <option value="inconnu">Je ne sais pas</option>
+          <option value="01">01 – Ain</option><option value="02">02 – Aisne</option>
+          <option value="03">03 – Allier</option><option value="04">04 – Alpes-de-Haute-Provence</option>
+          <option value="05">05 – Hautes-Alpes</option><option value="06">06 – Alpes-Maritimes</option>
+          <option value="07">07 – Ardèche</option><option value="08">08 – Ardennes</option>
+          <option value="09">09 – Ariège</option><option value="10">10 – Aube</option>
+          <option value="11">11 – Aude</option><option value="12">12 – Aveyron</option>
+          <option value="13">13 – Bouches-du-Rhône</option><option value="14">14 – Calvados</option>
+          <option value="15">15 – Cantal</option><option value="16">16 – Charente</option>
+          <option value="17">17 – Charente-Maritime</option><option value="18">18 – Cher</option>
+          <option value="19">19 – Corrèze</option><option value="2A">2A – Corse-du-Sud</option>
+          <option value="2B">2B – Haute-Corse</option><option value="21">21 – Côte-d'Or</option>
+          <option value="22">22 – Côtes d'Armor</option><option value="23">23 – Creuse</option>
+          <option value="24">24 – Dordogne</option><option value="25">25 – Doubs</option>
+          <option value="26">26 – Drôme</option><option value="27">27 – Eure</option>
+          <option value="28">28 – Eure-et-Loir</option><option value="29">29 – Finistère</option>
+          <option value="30">30 – Gard</option><option value="31">31 – Haute-Garonne</option>
+          <option value="32">32 – Gers</option><option value="33">33 – Gironde</option>
+          <option value="34">34 – Hérault</option><option value="35">35 – Ille-et-Vilaine</option>
+          <option value="36">36 – Indre</option><option value="37">37 – Indre-et-Loire</option>
+          <option value="38">38 – Isère</option><option value="39">39 – Jura</option>
+          <option value="40">40 – Landes</option><option value="41">41 – Loir-et-Cher</option>
+          <option value="42">42 – Loire</option><option value="43">43 – Haute-Loire</option>
+          <option value="44">44 – Loire-Atlantique</option><option value="45">45 – Loiret</option>
+          <option value="46">46 – Lot</option><option value="47">47 – Lot-et-Garonne</option>
+          <option value="48">48 – Lozère</option><option value="49">49 – Maine-et-Loire</option>
+          <option value="50">50 – Manche</option><option value="51">51 – Marne</option>
+          <option value="52">52 – Haute-Marne</option><option value="53">53 – Mayenne</option>
+          <option value="54">54 – Meurthe-et-Moselle</option><option value="55">55 – Meuse</option>
+          <option value="56">56 – Morbihan</option><option value="57">57 – Moselle</option>
+          <option value="58">58 – Nièvre</option><option value="59">59 – Nord</option>
+          <option value="60">60 – Oise</option><option value="61">61 – Orne</option>
+          <option value="62">62 – Pas-de-Calais</option><option value="63">63 – Puy-de-Dôme</option>
+          <option value="64">64 – Pyrénées-Atlantiques</option><option value="65">65 – Hautes-Pyrénées</option>
+          <option value="66">66 – Pyrénées-Orientales</option><option value="67">67 – Bas-Rhin</option>
+          <option value="68">68 – Haut-Rhin</option><option value="69">69 – Rhône</option>
+          <option value="70">70 – Haute-Saône</option><option value="71">71 – Saône-et-Loire</option>
+          <option value="72">72 – Sarthe</option><option value="73">73 – Savoie</option>
+          <option value="74">74 – Haute-Savoie</option><option value="75">75 – Paris</option>
+          <option value="76">76 – Seine-Maritime</option><option value="77">77 – Seine-et-Marne</option>
+          <option value="78">78 – Yvelines</option><option value="79">79 – Deux-Sèvres</option>
+          <option value="80">80 – Somme</option><option value="81">81 – Tarn</option>
+          <option value="82">82 – Tarn-et-Garonne</option><option value="83">83 – Var</option>
+          <option value="84">84 – Vaucluse</option><option value="85">85 – Vendée</option>
+          <option value="86">86 – Vienne</option><option value="87">87 – Haute-Vienne</option>
+          <option value="88">88 – Vosges</option><option value="89">89 – Yonne</option>
+          <option value="90">90 – Territoire de Belfort</option><option value="91">91 – Essonne</option>
+          <option value="92">92 – Hauts-de-Seine</option><option value="93">93 – Seine-Saint-Denis</option>
+          <option value="94">94 – Val-de-Marne</option><option value="95">95 – Val-d'Oise</option>
+          <option value="971">971 – Guadeloupe</option><option value="972">972 – Martinique</option>
+          <option value="973">973 – Guyane</option><option value="974">974 – La Réunion</option>
+          <option value="976">976 – Mayotte</option>
+        </select>
+      </div>
+    </div>
+    <div class="nav-row">
+      <button class="btn-next" onclick="tryNext(1)">Continuer →</button>
+    </div>
+  </div>
+
+  <!-- ÉTAPE 2 -->
+  <div class="form-card" id="step2" style="display:none">
+    <div class="step-title">Structure du bâtiment</div>
+    <div class="q-row" id="row_forme">
+      <div class="q-label">Forme du logement</div>
+      <div class="q-options" id="opt_forme"></div>
+    </div>
+    <div class="q-sep" id="sep_forme"></div>
+    <div class="q-row" id="row_etages_maison">
+      <div class="q-label">Nombre de niveaux</div>
+      <div class="q-options" id="opt_etages"></div>
+    </div>
+    <div class="q-sep" id="sep_etages_maison"></div>
+    <div class="q-row hidden" id="row_etages_appart">
+      <div class="q-label">Type d'appartement</div>
+      <div class="q-options" id="opt_etages_appart"></div>
+    </div>
+    <div class="q-sep hidden" id="sep_etages_appart"></div>
+    <div class="q-row" id="row_mitoyen_maison">
+      <div class="q-label">Mitoyenneté<span class="info-tip" style="display:block;font-weight:400;margin-top:2px">Côtés accolés à un autre logement</span></div>
+      <div class="q-options" id="opt_mitoyen_maison"></div>
+    </div>
+    <div class="q-sep" id="sep_mitoyen_maison"></div>
+    <div class="q-row hidden" id="row_position_appart">
+      <div class="q-label">Position dans l'immeuble</div>
+      <div class="q-options" id="opt_position_appart"></div>
+    </div>
+    <div class="q-sep hidden" id="sep_position_appart"></div>
+    <div class="q-row">
+      <div class="q-label">Travaux dans les 10 dernières années ?</div>
+      <div class="q-options" id="opt_travaux_recents"></div>
+    </div>
+    <div class="q-row hidden" id="row_travaux_types">
+      <div class="q-label">Types de travaux réalisés</div>
+      <div class="travaux-grid" id="travaux_types_grid">
+        <label class="travaux-item" onclick="toggleTravaux(this,'murs')">Isolation des murs</label>
+        <label class="travaux-item" onclick="toggleTravaux(this,'toiture')">Isolation de la toiture</label>
+        <label class="travaux-item" onclick="toggleTravaux(this,'plancher')">Isolation du plancher</label>
+        <label class="travaux-item" onclick="toggleTravaux(this,'vitrage')">Remplacement des fenêtres</label>
+        <label class="travaux-item" onclick="toggleTravaux(this,'vmc')">Installation d'une VMC</label>
+        <label class="travaux-item" onclick="toggleTravaux(this,'chaudiere_cond')">Chaudière à condensation</label>
+        <label class="travaux-item" onclick="toggleTravaux(this,'pac')">Pompe à chaleur</label>
+        <label class="travaux-item" onclick="toggleTravaux(this,'chauffe_eau_thermo')">Chauffe-eau thermodynamique</label>
+      </div>
+    </div>
+    <div class="nav-row">
+      <button class="btn-back" onclick="goStep(1)">← Retour</button>
+      <button class="btn-next" onclick="goStep(3)">Continuer →</button>
+    </div>
+  </div>
+
+  <!-- ÉTAPE 3 -->
+  <div class="form-card" id="step3" style="display:none">
+    <div class="step-title">Isolation et enveloppe</div>
+    <div class="err-box" id="err3">Veuillez indiquer le nombre de fenêtres ou cliquer sur « Je ne sais pas ».</div>
+
+    <!-- Fenêtres en premier, bien visible -->
+    <div class="q-row fen-row">
+      <div class="q-label" style="font-size:14px;font-weight:700;color:#1a2e3b">Nombre de fenêtres <span style="color:#e04040">*</span></div>
+      <div style="display:flex;align-items:center;gap:14px;flex:1;flex-wrap:wrap">
+        <div class="counter">
+          <button class="cbtn" onclick="chg('nb_fen',-1)">−</button>
+          <input class="cinput" type="number" id="nb_fen" value="" placeholder="?" min="0" max="50"/>
+          <button class="cbtn" onclick="chg('nb_fen',1)">+</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <span style="font-size:12px;color:#7a9aaa">environ 1,4 m² par ouverture</span>
+          <a class="jnsp-link" id="fen_btn" onclick="toggleFen()">Je ne sais pas</a>
+        </div>
+      </div>
+    </div>
+    <div class="q-sep"></div>
+
+    <div class="q-row">
+      <div class="q-label">Isolation des murs extérieurs</div>
+      <div class="q-options" id="opt_murs"></div>
+    </div>
+    <div class="q-sep"></div>
+    <div class="q-row">
+      <div class="q-label">Isolation du plancher bas</div>
+      <div class="q-options" id="opt_pb"></div>
+    </div>
+    <div class="q-sep"></div>
+    <div class="q-row">
+      <div class="q-label">Isolation du toit / plafond</div>
+      <div class="q-options" id="opt_ph"></div>
+    </div>
+    <div class="q-sep"></div>
+    <div class="q-row">
+      <div class="q-label">Type de vitrage</div>
+      <div class="q-options" id="opt_vitrage"></div>
+    </div>
+    <div class="q-sep"></div>
+    <div class="q-row">
+      <div class="q-label">Système de ventilation</div>
+      <div class="q-options" id="opt_vmc"></div>
+    </div>
+    <div class="nav-row">
+      <button class="btn-back" onclick="goStep(2)">← Retour</button>
+      <button class="btn-next" onclick="tryNext(3)">Continuer →</button>
+    </div>
+  </div>
+
+  <!-- ÉTAPE 4 -->
+  <div class="form-card" id="step4" style="display:none">
+    <div class="step-title">Chauffage et eau chaude</div>
+    <div class="q-row">
+      <div class="q-label">Chauffage principal</div>
+      <div class="q-options" id="opt_chauffage"></div>
+    </div>
+    <div class="q-sep"></div>
+    <div class="q-row">
+      <div class="q-label">Régulation de la température</div>
+      <div class="q-options" id="opt_regulation"></div>
+    </div>
+    <div class="q-sep"></div>
+    <div class="q-row">
+      <div class="q-label">Production d'eau chaude</div>
+      <div class="q-options" id="opt_ecs"></div>
+    </div>
+    <div class="q-sep"></div>
+    <div class="q-row">
+      <div class="q-label">Climatisation</div>
+      <div class="q-options" id="opt_clim"></div>
+    </div>
+    <div class="nav-row">
+      <button class="btn-back" onclick="goStep(3)">← Retour</button>
+      <button class="btn-next" onclick="goStep(5)">Continuer →</button>
+    </div>
+  </div>
+
+  <!-- ÉTAPE 5 : AIDES & COORDONNÉES -->
+  <div class="form-card" id="step5" style="display:none">
+    <div class="step-title">Aides financières &amp; Coordonnées</div>
+
+    <div class="aide-section-title">Calcul des aides financières</div>
+    <div class="q-row">
+      <div class="q-label">Nombre d'habitants</div>
+      <div style="display:flex;align-items:center;gap:10px;flex:1">
+        <div class="counter">
+          <button class="cbtn" onclick="chg('nb_occupants',-1)">−</button>
+          <input class="cinput" type="number" id="nb_occupants" value="2" min="1" max="10"/>
+          <button class="cbtn" onclick="chg('nb_occupants',1)">+</button>
+        </div>
+        <span class="cunit">personnes</span>
+      </div>
+    </div>
+    <div class="q-sep"></div>
+
+    <div class="q-row">
+      <div class="q-label">Revenu fiscal de référence du foyer
+        <span class="rev-info">Permet d'estimer vos aides (MaPrimeRénov', CEE…)</span>
+      </div>
+      <div class="styled-select" style="flex:1">
+        <select id="revenu_fiscal">
+          <option value="">Je ne souhaite pas renseigner</option>
+          <option value="12000">Moins de 15 000 €/an</option>
+          <option value="18000">15 000 – 22 000 €/an</option>
+          <option value="26000">22 000 – 30 000 €/an</option>
+          <option value="37000">30 000 – 45 000 €/an</option>
+          <option value="52000">45 000 – 60 000 €/an</option>
+          <option value="75000">60 000 – 90 000 €/an</option>
+          <option value="110000">Plus de 90 000 €/an</option>
+        </select>
+      </div>
+    </div>
+    <div class="q-sep"></div>
+
+    <div class="aide-section-title">Vos coordonnées</div>
+    <div class="q-row">
+      <div class="q-label">Adresse e-mail</div>
+      <div style="flex:1">
+        <input type="email" id="contact_email" placeholder="exemple@email.com"
+          style="width:100%;border:1.5px solid #c5cfe8;border-radius:9px;padding:11px 14px;font-size:13px;color:#2c3e50;outline:none;font-family:inherit;"
+          onfocus="this.style.borderColor='#0063CB'" onblur="this.style.borderColor='#c5cfe8'"/>
+      </div>
+    </div>
+    <div class="q-sep"></div>
+
+    <div class="q-row">
+      <div class="q-label">Numéro de téléphone</div>
+      <div style="flex:1">
+        <input type="tel" id="contact_phone" placeholder="06 00 00 00 00"
+          style="width:100%;border:1.5px solid #c5cfe8;border-radius:9px;padding:11px 14px;font-size:13px;color:#2c3e50;outline:none;font-family:inherit;"
+          onfocus="this.style.borderColor='#0063CB'" onblur="this.style.borderColor='#c5cfe8'"/>
+      </div>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn-back" onclick="goStep(4)">← Retour</button>
+      <button class="btn-next" onclick="calculer()">Calculer mon DPE →</button>
+    </div>
+  </div>
+
+  <!-- ÉTAPE 6 : RÉSULTATS -->
+  <div id="step6" style="display:none">
+    <div class="res-header">
+      <div class="res-header-label">Votre DPE estimé</div>
+      <div class="res-score-row">
+        <div id="r_et" class="et-big">–</div>
+        <div class="res-vals">
+          <div id="r_ep" class="res-ep">–</div>
+          <div id="r_ges" class="res-ges">–</div>
+          <div id="r_fiab" class="res-fiab">–</div>
+        </div>
+      </div>
+      <div id="r_dpe_compare" class="res-compare"></div>
+      <div id="r_location_msg" class="location-msg" style="display:none"></div>
+      <div id="r_dpe_expert_wrap" class="dpe-expert-wrap" style="display:none">
+        <button class="btn-dpe-expert" onclick="contactExpert()">
+          <div class="btn-dpe-expert-ico"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><circle cx="12" cy="8" r="4"/><path d="M4 20a8 8 0 0116 0"/><path d="M12 14v2M10 16h4"/></svg></div>
+          <div class="btn-dpe-expert-txt">
+            Faire réaliser un diagnostic DPE officiel
+            <span class="btn-dpe-expert-sub">Par un diagnostiqueur certifié · Tarifs entre 80 € et 250 €</span>
+          </div>
+        </button>
+      </div>
+    </div>
+
+    <div class="res-body">
+      <div class="res-section-head">
+        <div class="res-section-title">Options de travaux</div>
+        <div class="res-section-count" id="r_travaux_count"></div>
+      </div>
+      <div id="r_ameliorations"></div>
+
+      <!-- Détail calcul -->
+      <details class="res-detail">
+        <summary>Détail du calcul énergétique</summary>
+        <div class="scale-title">Échelle de performance</div>
+        <div class="scale-row"><div class="scale-lbl et-A">A</div><div class="scale-bg"><div class="scale-fill et-A" id="bar_A"></div></div><div class="scale-val">≤ 70</div></div>
+        <div class="scale-row"><div class="scale-lbl et-B">B</div><div class="scale-bg"><div class="scale-fill et-B" id="bar_B"></div></div><div class="scale-val">71–110</div></div>
+        <div class="scale-row"><div class="scale-lbl et-C">C</div><div class="scale-bg"><div class="scale-fill et-C" id="bar_C"></div></div><div class="scale-val">111–180</div></div>
+        <div class="scale-row"><div class="scale-lbl et-D">D</div><div class="scale-bg"><div class="scale-fill et-D" id="bar_D"></div></div><div class="scale-val">181–250</div></div>
+        <div class="scale-row"><div class="scale-lbl et-E">E</div><div class="scale-bg"><div class="scale-fill et-E" id="bar_E"></div></div><div class="scale-val">251–330</div></div>
+        <div class="scale-row"><div class="scale-lbl et-F">F</div><div class="scale-bg"><div class="scale-fill et-F" id="bar_F"></div></div><div class="scale-val">331–420</div></div>
+        <div class="scale-row"><div class="scale-lbl et-G">G</div><div class="scale-bg"><div class="scale-fill et-G" id="bar_G"></div></div><div class="scale-val">&gt; 420</div></div>
+        <div class="detail">
+          <div class="drow"><span>Chauffage</span><span id="r_ch">–</span></div>
+          <div class="drow"><span>Eau chaude sanitaire</span><span id="r_ecs2">–</span></div>
+          <div class="drow"><span>Éclairage</span><span id="r_ecl">–</span></div>
+          <div class="drow"><span>Total énergie finale</span><span id="r_ef">–</span></div>
+          <div class="drow"><span>Total énergie primaire</span><span id="r_ep2">–</span></div>
+          <div class="drow"><span>Émissions CO₂</span><span id="r_co2">–</span></div>
+        </div>
+      </details>
+
+      <div id="r_hyp"></div>
+
+      <div class="res-actions">
+        <button class="btn-restart" onclick="restart()">Recommencer</button>
+        <button class="btn-print" onclick="window.print()">Imprimer</button>
+      </div>
+      <p class="disclaimer">Résultat indicatif — méthode 3CL-DPE 2021 (Arrêté du 31 mars 2021).<br>Pour un DPE officiel, faites appel à un diagnostiqueur certifié.<br>Prix travaux : estimations moyennes France 2025 (sources : ADEME, Effy, Hellowatt).</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL TRAVAUX -->
+<div id="travaux-modal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="modal-title"></div>
+        <div class="modal-letters" id="modal-letters" style="margin-top:8px"></div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-desc" id="modal-desc"></div>
+      <div class="photos-title">Réalisé par nos artisans</div>
+      <div class="photos-grid" id="modal-photos"></div>
+      <div class="modal-prices" id="modal-prices"></div>
+      <button class="btn-artisan" onclick="contactArtisan()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8 19.79 19.79 0 01.18 1.18 2 2 0 012.18 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.15a16 16 0 006.29 6.29l1.42-1.42a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.09v2.83z"/></svg>
+        Être contacté par nos artisans
+      </button>
+      <div class="btn-artisan-note">Réponse sous 24h · Devis gratuit et sans engagement</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── SVG icons ──────────────────────────────────────────────────────────────────
+const G = "#0063CB";
+const I = {
+  proprietaire:`<svg viewBox="0 0 24 24" fill="none" stroke="${G}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="11" r="4"/><path d="M8 15a6 6 0 00-5.5 3.6"/><path d="M15 7.5l1.5 1.5-1 1 1 1-1 1 1 1-2 2-1.5-1.5M15 7.5L12.5 5a2 2 0 00-2.8 0l-.7.7"/></svg>`,
+  locataire:   `<svg viewBox="0 0 24 24" fill="none" stroke="${G}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8M8 11h8M8 15h5"/><path d="M16 15l2 2-2 2" stroke-width="1.5"/></svg>`,
+  oui:         `<svg viewBox="0 0 24 24" fill="none" stroke="${G}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-5"/></svg>`,
+  non:         `<svg viewBox="0 0 24 24" fill="none" stroke="${G}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg>`,
+  maison:      `<svg viewBox="0 0 24 24" fill="none" stroke="${G}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5L12 3l9 7.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V10.5z"/><path d="M9 21V12h6v9"/></svg>`,
+  appart:      `<svg viewBox="0 0 24 24" fill="none" stroke="${G}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>`,
+  carre:       `<svg viewBox="0 0 24 24" fill="none" stroke="${G}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="1"/><path d="M4 12h16M12 4v16"/></svg>`,
+  en_l:        `<svg viewBox="0 0 24 24" fill="none" stroke="${G}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v16h7v-7h9V4H4z"/><path d="M11 13h9"/></svg>`,
+  forme_autre: `<svg viewBox="0 0 24 24" fill="none" stroke="${G}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h8v8h8v8H4V4z"/></svg>`,
+  mitoyen0:    `<svg viewBox="0 0 24 24" fill="none" stroke="${G}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="8" width="14" height="12" rx="1"/><path d="M5 14L12 8l7 6"/><path d="M3 20h18"/></svg>`,
+  mitoyen1:    `<svg viewBox="0 0 24 24" fill="none" stroke="${G}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="8" width="12" height="12" rx="1"/><path d="M5 14L11 8l6 6"/><rect x="17" y="8" width="2" height="12" fill="#dce8ff" stroke-width="1"/></svg>`,
+  mitoyen2:    `<svg viewBox="0 0 24 24" fill="none" stroke="${G}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="8" width="10" height="12" rx="1"/><path d="M7 14L12 8l5 6"/><rect x="17" y="8" width="2" height="12" fill="#dce8ff" stroke-width="1"/><rect x="5" y="8" width="2" height="12" fill="#dce8ff" stroke-width="1"/></svg>`,
+  appart_mil:  `<svg viewBox="0 0 24 24" fill="none" stroke="${G}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="3" width="10" height="18" rx="1"/><rect x="3" y="3" width="4" height="18" fill="#dce8ff" stroke-width="1"/><rect x="17" y="3" width="4" height="18" fill="#dce8ff" stroke-width="1"/></svg>`,
+  appart_coin: `<svg viewBox="0 0 24 24" fill="none" stroke="${G}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="1"/><rect x="19" y="3" width="2" height="18" fill="#dce8ff" stroke-width="1"/><path d="M3 21h18"/></svg>`,
+  appart_top:  `<svg viewBox="0 0 24 24" fill="none" stroke="${G}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="9" width="14" height="12" rx="1"/><path d="M3 9l9-6 9 6"/><rect x="3" y="15" width="2" height="6" fill="#dce8ff" stroke-width="1"/><rect x="19" y="15" width="2" height="6" fill="#dce8ff" stroke-width="1"/></svg>`,
+  appart_rdc:  `<svg viewBox="0 0 24 24" fill="none" stroke="${G}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="14" rx="1"/><rect x="3" y="17" width="18" height="4" fill="#dce8ff" stroke-width="1" rx="1"/><rect x="3" y="3" width="2" height="14" fill="#dce8ff" stroke-width="1"/><rect x="19" y="3" width="2" height="14" fill="#dce8ff" stroke-width="1"/></svg>`,
+  etage1:      `<svg viewBox="0 0 24 24" fill="none" stroke="${G}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="14" width="16" height="6" rx="1"/><path d="M4 14L12 7l8 7"/></svg>`,
+  etage2:      `<svg viewBox="0 0 24 24" fill="none" stroke="${G}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="16" width="16" height="5" rx="1"/><rect x="5" y="10" width="14" height="6"/><path d="M5 10l7-6 7 6"/></svg>`,
+  etage3:      `<svg viewBox="0 0 24 24" fill="none" stroke="${G}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="18" width="16" height="4" rx="1"/><rect x="5" y="13" width="14" height="5"/><rect x="6" y="8" width="12" height="5"/><path d="M6 8l6-5 6 5"/></svg>`,
+  etage4:      `<svg viewBox="0 0 24 24" fill="none" stroke="${G}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="20" width="18" height="3" rx="1"/><rect x="4" y="16" width="16" height="4"/><rect x="5" y="12" width="14" height="4"/><rect x="6" y="8" width="12" height="4"/><path d="M7 8l5-5 5 5"/></svg>`,
+  mur_non:     `<svg viewBox="0 0 24 24" fill="none" stroke="${G}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="1"/><path d="M3 12h18M12 5v14M3 8.5h9M12 15.5h9"/></svg>`,
+  mur_iso:     `<svg viewBox="0 0 24 24" fill="none" stroke="${G}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="12" height="14" rx="1"/><rect x="15" y="5" width="6" height="14" rx="1" fill="#dce8ff"/><path d="M3 12h12M9 5v14"/></svg>`,
+  mur_ite:     `<svg viewBox="0 0 24 24" fill="none" stroke="${G}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="5" width="12" height="14" rx="1"/><rect x="3" y="5" width="4" height="14" rx="1" fill="#dce8ff"/><path d="M7 12h12M13 5v14"/></svg>`,
+  mur_bois:    `<svg viewBox="0 0 24 24" fill="none" stroke="${G}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V6l4-3 4 3V20"/><path d="M12 20V9l4-3 4 3v11"/><path d="M4 14h8M12 14h8"/></svg>`,
+  plancher:    `<svg viewBox="0 0 24 24" fill="none" stroke="${G}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="14" width="18" height="5" rx="1"/><rect x="3" y="5" width="18" height="4" rx="1" fill="#dce8ff"/><path d="M3 14h18M7 14V9M12 14V9M17 14V9"/></svg>`,
+  toit:        `<svg viewBox="0 0 24 24" fill="none" stroke="${G}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12L12 4l9 8"/><rect x="5" y="12" width="14" height="8" rx="1"/></svg>`,
+  toit_iso:    `<svg viewBox="0 0 24 24" fill="none" stroke="${G}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10L12 3l9 7"/><rect x="5" y="10" width="14" height="4" rx="1" fill="#dce8ff"/><rect x="5" y="14" width="14" height="7" rx="1"/></svg>`,
+  fenetre:     `<svg viewBox="0 0 24 24" fill="none" stroke="${G}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="1"/><path d="M4 12h16M12 4v16"/></svg>`,
+  fenetre2:    `<svg viewBox="0 0 24 24" fill="none" stroke="${G}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="1"/><rect x="6" y="7" width="5" height="10" rx="1"/><rect x="13" y="7" width="5" height="10" rx="1"/></svg>`,
+  vmc:         `<svg viewBox="0 0 24 24" fill="none" stroke="${G}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M12 4c0 0 2 4 2 8s-2 8-2 8M4 12c0 0 4-2 8-2s8 2 8 2"/><circle cx="12" cy="12" r="2" fill="#dce8ff"/></svg>`,
+  air:         `<svg viewBox="0 0 24 24" fill="none" stroke="${G}" stroke-width="1.8" stroke-linecap="round"><path d="M3 8h14a3 3 0 010 6H3"/><path d="M3 16h10a2 2 0 010 4H3"/></svg>`,
+  elec:        `<svg viewBox="0 0 24 24" fill="none" stroke="${G}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"/></svg>`,
+  feu:         `<svg viewBox="0 0 24 24" fill="none" stroke="${G}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21c-4 0-7-3-7-7 0-3 2-5 3-6 0 2 1 3 2 3 0-3 2-6 5-9 0 4 3 6 3 9 0-1 1-2 1-3 1 1 2 3 2 6 0 4-3 7-9 7z"/></svg>`,
+  bois:        `<svg viewBox="0 0 24 24" fill="none" stroke="${G}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16M7 20V8l5-5 5 5v12"/><path d="M10 20v-6h4v6"/><circle cx="12" cy="8" r="1.5" fill="#dce8ff"/></svg>`,
+  pac:         `<svg viewBox="0 0 24 24" fill="none" stroke="${G}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="8" width="10" height="12" rx="1"/><rect x="14" y="4" width="8" height="9" rx="1"/><path d="M12 14h2M7 12v4M5 14h4"/><path d="M18 13v7M15 16h6"/></svg>`,
+  reseau:      `<svg viewBox="0 0 24 24" fill="none" stroke="${G}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8"/></svg>`,
+  thermo:      `<svg viewBox="0 0 24 24" fill="none" stroke="${G}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.76V3.5a2.5 2.5 0 00-5 0v11.26a4.5 4.5 0 105 0z"/></svg>`,
+  prog:        `<svg viewBox="0 0 24 24" fill="none" stroke="${G}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M9 7h6M9 11h6M9 15h4"/><circle cx="16" cy="17" r="3" fill="white"/><path d="M16 15.5v1.5l1 1"/></svg>`,
+  solaire:     `<svg viewBox="0 0 24 24" fill="none" stroke="${G}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/></svg>`,
+  ballon:      `<svg viewBox="0 0 24 24" fill="none" stroke="${G}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="12" height="14" rx="6"/><path d="M10 18v3h4v-3M12 10v3M10 11.5h4"/></svg>`,
+  radiateur:   `<svg viewBox="0 0 24 24" fill="none" stroke="${G}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="12" rx="1"/><path d="M7 7v12M12 7v12M17 7v12M2 13h20"/></svg>`,
+  plancher_ch: `<svg viewBox="0 0 24 24" fill="none" stroke="${G}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="16" width="20" height="4" rx="1"/><path d="M5 16c0-5 4-8 7-10M12 6c3 2 7 5 7 10"/><path d="M4 13h16"/></svg>`,
+  clim:        `<svg viewBox="0 0 24 24" fill="none" stroke="${G}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="10" rx="2"/><path d="M7 16v4M12 16v4M17 16v4"/><circle cx="9" cy="11" r="2"/><path d="M13 11h4"/></svg>`,
+  non_clim:    `<svg viewBox="0 0 24 24" fill="none" stroke="${G}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg>`,
+  question:    `<svg viewBox="0 0 24 24" fill="none" stroke="#8aabb8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 015 0c0 2-2.5 2.5-2.5 4.5"/><circle cx="12" cy="17.5" r=".75" fill="#8aabb8"/></svg>`,
+  annee_old:   `<svg viewBox="0 0 24 24" fill="none" stroke="${G}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="18" width="18" height="3" rx="1"/><rect x="4" y="14" width="16" height="4"/><rect x="5" y="10" width="14" height="4"/><path d="M6 10l6-7 6 7"/></svg>`,
+  annee_mid:   `<svg viewBox="0 0 24 24" fill="none" stroke="${G}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="16" width="16" height="5" rx="1"/><rect x="5" y="10" width="14" height="6"/><path d="M5 10l7-6 7 6"/></svg>`,
+  annee_rec:   `<svg viewBox="0 0 24 24" fill="none" stroke="${G}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5L12 3l9 7.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V10.5z"/><path d="M9 21V12h6v9"/></svg>`,
+  annee_neuf:  `<svg viewBox="0 0 24 24" fill="none" stroke="${G}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5L12 3l9 7.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V10.5z"/><path d="M9 21V13h6v8"/><circle cx="18" cy="6" r="4" fill="#dce9ff"/><path d="M16.5 6l1 1 2-2" stroke="${G}" stroke-width="1.5"/></svg>`,
+};
+
+const OPTS = {
+  annee: [
+    { val:"avant1975",  ico:"annee_old",  lbl:"Avant 1975" },
+    { val:"1975_2000",  ico:"annee_mid",  lbl:"1975 – 2000" },
+    { val:"2001_2012",  ico:"annee_rec",  lbl:"2001 – 2012" },
+    { val:"apres2012",  ico:"annee_neuf", lbl:"Après 2012" },
+    { val:"inconnu",    ico:"question",   lbl:"Je ne sais pas", jnsp:true },
+  ],
+  statut: [
+    { val:"proprietaire", ico:"proprietaire", lbl:"Propriétaire" },
+    { val:"locataire",    ico:"locataire",    lbl:"Locataire" },
+  ],
+  type: [
+    { val:"maison",      ico:"maison",  lbl:"Maison individuelle" },
+    { val:"appartement", ico:"appart",  lbl:"Appartement" },
+  ],
+  dpe_connu: [
+    { val:"non", ico:"non", lbl:"Je ne le connais pas" },
+    { val:"oui", ico:"oui", lbl:"Oui, je le connais" },
+  ],
+  forme: [
+    { val:"carre",   ico:"carre",       lbl:"Carrée ou rectangulaire" },
+    { val:"en_l",    ico:"en_l",        lbl:"Forme en L" },
+    { val:"autre",   ico:"forme_autre", lbl:"Autre forme" },
+    { val:"inconnu", ico:"question",    lbl:"Je ne sais pas", jnsp:true },
+  ],
+  etages: [
+    { val:"1",       ico:"etage1",   lbl:"Plain-pied (1 niveau)" },
+    { val:"2",       ico:"etage2",   lbl:"2 niveaux" },
+    { val:"3",       ico:"etage3",   lbl:"3 niveaux" },
+    { val:"4",       ico:"etage4",   lbl:"4 niveaux ou plus" },
+    { val:"inconnu", ico:"question", lbl:"Je ne sais pas", jnsp:true },
+  ],
+  etages_appart: [
+    { val:"1",       ico:"etage1",   lbl:"Simplex (1 niveau)" },
+    { val:"2",       ico:"etage2",   lbl:"Duplex (2 niveaux)" },
+    { val:"3",       ico:"etage3",   lbl:"Triplex (3 niveaux)" },
+    { val:"inconnu", ico:"question", lbl:"Je ne sais pas", jnsp:true },
+  ],
+  mitoyen_maison: [
+    { val:"0",       ico:"mitoyen0", lbl:"Maison indépendante (0 voisin)" },
+    { val:"1",       ico:"mitoyen1", lbl:"1 côté mitoyen" },
+    { val:"2",       ico:"mitoyen2", lbl:"2 côtés mitoyens" },
+    { val:"inconnu", ico:"question", lbl:"Je ne sais pas", jnsp:true },
+  ],
+  position_appart: [
+    { val:"milieu",  ico:"appart_mil",  lbl:"Milieu d'immeuble" },
+    { val:"coin",    ico:"appart_coin", lbl:"Angle ou bout" },
+    { val:"dernier", ico:"appart_top",  lbl:"Dernier étage" },
+    { val:"rdc",     ico:"appart_rdc",  lbl:"Rez-de-chaussée" },
+    { val:"inconnu", ico:"question",    lbl:"Je ne sais pas", jnsp:true },
+  ],
+  travaux_recents: [
+    { val:"oui",     ico:"oui",     lbl:"Oui, des travaux ont été réalisés" },
+    { val:"non",     ico:"non",     lbl:"Non, aucun travaux récents" },
+    { val:"inconnu", ico:"question",lbl:"Je ne sais pas", jnsp:true },
+  ],
+  murs: [
+    { val:"non_isole",          ico:"mur_non",  lbl:"Aucune isolation" },
+    { val:"isole_ext",          ico:"mur_ite",  lbl:"Isolés par l'extérieur (ITE)" },
+    { val:"isole_int_post2000", ico:"mur_iso",  lbl:"Isolés par l'intérieur" },
+    { val:"inconnu",            ico:"question", lbl:"Je ne sais pas", jnsp:true },
+  ],
+  pb: [
+    { val:"non_isole",   ico:"plancher", lbl:"Aucune isolation" },
+    { val:"isole_100mm", ico:"plancher", lbl:"Isolé" },
+    { val:"inconnu",     ico:"question", lbl:"Je ne sais pas", jnsp:true },
+  ],
+  ph: [
+    { val:"non_isole",   ico:"toit",     lbl:"Aucune isolation" },
+    { val:"isole_200mm", ico:"toit_iso", lbl:"Isolé" },
+    { val:"inconnu",     ico:"question", lbl:"Je ne sais pas", jnsp:true },
+  ],
+  vitrage: [
+    { val:"simple",          ico:"fenetre",  lbl:"Simple vitrage" },
+    { val:"double_post2000", ico:"fenetre2", lbl:"Double vitrage" },
+    { val:"triple",          ico:"fenetre2", lbl:"Triple vitrage" },
+    { val:"inconnu",         ico:"question", lbl:"Je ne sais pas", jnsp:true },
+  ],
+  vmc: [
+    { val:"naturelle", ico:"air",      lbl:"Sans VMC" },
+    { val:"vmc_sf",    ico:"vmc",      lbl:"VMC simple flux" },
+    { val:"vmc_df",    ico:"vmc",      lbl:"VMC double flux" },
+    { val:"inconnu",   ico:"question", lbl:"Je ne sais pas", jnsp:true },
+  ],
+  chauffage: [
+    { val:"radiateur_elec",  ico:"radiateur", lbl:"Électrique (radiateurs / convecteurs)" },
+    { val:"chaudiere_gaz",   ico:"feu",       lbl:"Chaudière au gaz" },
+    { val:"pac_air_eau",     ico:"pac",       lbl:"Pompe à chaleur (PAC)" },
+    { val:"chaudiere_fioul_std", ico:"feu",   lbl:"Chaudière fioul" },
+    { val:"poele_bois",      ico:"bois",      lbl:"Bois / granulés / poêle" },
+    { val:"inconnu",         ico:"question",  lbl:"Je ne sais pas", jnsp:true },
+  ],
+  regulation: [
+    { val:"sans_regulation", ico:"thermo",   lbl:"Pas de thermostat" },
+    { val:"programmable",    ico:"prog",     lbl:"Thermostat (programmable ou non)" },
+    { val:"inconnu",         ico:"question", lbl:"Je ne sais pas", jnsp:true },
+  ],
+  ecs: [
+    { val:"ballon_elec",     ico:"ballon",  lbl:"Ballon électrique" },
+    { val:"chaudiere_gaz",   ico:"feu",     lbl:"Chaudière gaz (mixte avec chauffage)" },
+    { val:"chaudiere_fioul", ico:"feu",     lbl:"Chaudière fioul (mixte avec chauffage)" },
+    { val:"thermodynamique", ico:"pac",     lbl:"Chauffe-eau thermodynamique" },
+    { val:"solaire",         ico:"solaire", lbl:"Panneaux solaires thermiques" },
+    { val:"inconnu",         ico:"question",lbl:"Je ne sais pas", jnsp:true },
+  ],
+  clim: [
+    { val:"non",        ico:"non_clim", lbl:"Pas de climatisation" },
+    { val:"split_fixe", ico:"clim",     lbl:"Climatiseur fixe" },
+  ],
+};
+
+const PESSIMISTE = {
+  forme:"en_l", etages:"2", etages_appart:"1", mitoyen_maison:"0", position_appart:"coin",
+  travaux_recents:"non", murs:"non_isole", pb:"non_isole", ph:"non_isole",
+  vitrage:"double_pre1990", vmc:"naturelle", chauffage:"chaudiere_gaz_std",
+  regulation:"sans_regulation", ecs:"ballon_elec",
+};
+
+const SEL = {
+  statut:"proprietaire", type:"",
+  annee:"avant1975",
+  dpe_connu:"non", dpe_actuel:"",
+  forme:"inconnu", etages:"inconnu", etages_appart:"inconnu",
+  mitoyen_maison:"inconnu", position_appart:"inconnu",
+  travaux_recents:"non",
+  murs:"inconnu", pb:"inconnu", ph:"inconnu",
+  vitrage:"inconnu", vmc:"inconnu",
+  chauffage:"inconnu", regulation:"inconnu",
+  ecs:"inconnu", clim:"non"
+};
+const TRAVAUX_SEL = new Set();
+let fen_inconnu = true; // true=auto-calculé selon surface et type
+let currentStep = 1;
+
+// ── Vignettes ────────────────────────────────────────────────────────────────
+function makeVig(opt, key) {
+  const el = document.createElement("div");
+  el.className = "vig" + (opt.jnsp?" jnsp":"") + (SEL[key]===opt.val?" sel":"");
+  el.innerHTML = `<div class="ico-box">${I[opt.ico]||""}</div><span>${opt.lbl}</span>`;
+  el.onclick = () => {
+    SEL[key] = opt.val;
+    el.closest(".q-options").querySelectorAll(".vig").forEach(v=>v.classList.remove("sel"));
+    el.classList.add("sel");
+    onSelect(key, opt.val);
+  };
+  return el;
+}
+
+function buildAll() {
+  Object.keys(OPTS).forEach(key => {
+    const c = document.getElementById("opt_"+key);
+    if (!c) return;
+    c.innerHTML = "";
+    OPTS[key].forEach(opt => c.appendChild(makeVig(opt, key)));
+  });
+}
+
+function onSelect(key, val) {
+  if (key === "type") {
+    const m = val === "maison";
+    setVis("row_forme", m); setVis("sep_forme", m);
+    setVis("row_etages_maison", m); setVis("sep_etages_maison", m);
+    setVis("row_etages_appart", !m); setVis("sep_etages_appart", !m);
+    setVis("row_mitoyen_maison", m); setVis("sep_mitoyen_maison", m);
+    setVis("row_position_appart", !m); setVis("sep_position_appart", !m);
+  }
+  if (key === "dpe_connu")      setVis("row_dpe_actuel", val === "oui");
+  if (key === "travaux_recents") setVis("row_travaux_types", val === "oui");
+}
+
+function setVis(id, v) { const e=document.getElementById(id); if(e) e.classList.toggle("hidden",!v); }
+
+function toggleTravaux(el, key) {
+  el.classList.toggle("checked");
+  if(el.classList.contains("checked")) TRAVAUX_SEL.add(key); else TRAVAUX_SEL.delete(key);
+}
+
+const DPE_COLORS = {A:"#00882d",B:"#52b153",C:"#c2d12b",D:"#f4c400",E:"#f39200",F:"#e2001a",G:"#8b0000"};
+function onDpeSelectChange() {
+  const v = document.getElementById("dpe_actuel_select").value;
+  SEL.dpe_actuel = v;
+  const badge = document.getElementById("dpe_badge");
+  if(v){ badge.classList.remove("hidden"); badge.className="dpe-badge "+v; badge.textContent=v; badge.style.background=DPE_COLORS[v]||"#333"; badge.style.color=["C","D"].includes(v)?"#333":"white"; }
+  else badge.classList.add("hidden");
+}
+
+function chg(id, d) {
+  const el = document.getElementById(id);
+  const v = parseFloat(el.value)||0;
+  el.value = Math.max(parseFloat(el.min)||0, Math.min(parseFloat(el.max)||9999, v+d));
+  if(id==="nb_fen"){ fen_inconnu=false; hideErr("err3"); syncFen(); }
+}
+
+function toggleFen() {
+  fen_inconnu = fen_inconnu === true ? null : true;
+  if(fen_inconnu===true){ document.getElementById("nb_fen").value=""; hideErr("err3"); }
+  syncFen();
+}
+function syncFen() {
+  const btn=document.getElementById("fen_btn"), inp=document.getElementById("nb_fen");
+  if(fen_inconnu===true){ btn.textContent="✓ Je ne sais pas"; btn.classList.add("on"); inp.placeholder="auto"; inp.disabled=true; }
+  else if(fen_inconnu===false){ btn.textContent="Je ne sais pas"; btn.classList.remove("on"); inp.disabled=false; }
+  else { btn.textContent="Je ne sais pas"; btn.classList.remove("on"); inp.placeholder="?"; inp.disabled=false; }
+}
+
+// ── Navigation ───────────────────────────────────────────────────────────────
+function tryNext(from) {
+  if(from===1){
+    if(!SEL.type){ showErr("err1"); return; }
+    hideErr("err1");
+  }
+  if(from===3){
+    hideErr("err3");
+  }
+  goStep(from+1);
+}
+
+function showErr(id){ const e=document.getElementById(id); if(e) e.classList.add("show"); }
+function hideErr(id){ const e=document.getElementById(id); if(e) e.classList.remove("show"); }
+
+function goStep(n) {
+  currentStep = n;
+  [1,2,3,4,5,6].forEach(i=>{ const e=document.getElementById("step"+i); if(e) e.style.display="none"; });
+  document.getElementById("step"+n).style.display="block";
+  [1,2,3,4,5,6].forEach(i=>{
+    const d=document.getElementById("pd"+i), l=document.getElementById("pl"+i);
+    if(!d) return;
+    d.className="prog-dot "+(i<n?"done":i===n?"active":"todo");
+    l.className="prog-lbl "+(i<=n?"active":"");
+    d.textContent=i<n?"✓":i;
+  });
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function restart() {
+  Object.assign(SEL,{type:"",annee:"avant1975",dpe_connu:"non",dpe_actuel:"",forme:"inconnu",etages:"inconnu",etages_appart:"inconnu",mitoyen_maison:"inconnu",position_appart:"inconnu",travaux_recents:"non",murs:"inconnu",pb:"inconnu",ph:"inconnu",vitrage:"inconnu",vmc:"inconnu",chauffage:"inconnu",regulation:"inconnu",ecs:"inconnu",clim:"non"});
+  TRAVAUX_SEL.clear(); fen_inconnu=true;
+  buildAll();
+  document.getElementById("nb_fen").value=""; syncFen();
+  document.getElementById("nb_occupants").value="2";
+  document.getElementById("revenu_fiscal").value="";
+  document.getElementById("contact_email").value="";
+  document.getElementById("contact_phone").value="";
+  clickVal("annee","avant1975");
+  document.getElementById("dpe_actuel_select").value="";
+  document.getElementById("dpe_badge").classList.add("hidden");
+  setVis("row_dpe_actuel",false); setVis("row_forme",true); setVis("sep_forme",true);
+  setVis("row_mitoyen_maison",true); setVis("sep_mitoyen_maison",true);
+  setVis("row_position_appart",false); setVis("sep_position_appart",false);
+  setVis("row_travaux_types",false);
+  clickVal("statut","proprietaire"); clickVal("dpe_connu","non"); clickVal("clim","non");
+  goStep(1);
+}
+
+// ── Données 3CL ──────────────────────────────────────────────────────────────
+const ZONES={"01":"H1c","02":"H1a","03":"H1c","04":"H2d","05":"H1c","06":"H3","07":"H2d","08":"H1b","09":"H2c","10":"H1b","11":"H3","12":"H2c","13":"H3","14":"H1a","15":"H1c","16":"H2b","17":"H2b","18":"H2b","19":"H1c","2A":"H3","2B":"H3","21":"H1c","22":"H2a","23":"H1c","24":"H2c","25":"H1c","26":"H2d","27":"H1a","28":"H1a","29":"H2a","30":"H3","31":"H2c","32":"H2c","33":"H2c","34":"H3","35":"H2a","36":"H2b","37":"H2b","38":"H1c","39":"H1c","40":"H2c","41":"H2b","42":"H1c","43":"H1c","44":"H2b","45":"H1b","46":"H2c","47":"H2c","48":"H2d","49":"H2b","50":"H2a","51":"H1b","52":"H1b","53":"H2b","54":"H1b","55":"H1b","56":"H2a","57":"H1b","58":"H1b","59":"H1a","60":"H1a","61":"H1a","62":"H1a","63":"H1c","64":"H2c","65":"H2c","66":"H3","67":"H1b","68":"H1b","69":"H1c","70":"H1b","71":"H1c","72":"H2b","73":"H1c","74":"H1c","75":"H1a","76":"H1a","77":"H1a","78":"H1a","79":"H2b","80":"H1a","81":"H2c","82":"H2c","83":"H3","84":"H2d","85":"H2b","86":"H2b","87":"H1c","88":"H1b","89":"H1b","90":"H1b","91":"H1a","92":"H1a","93":"H1a","94":"H1a","95":"H1a","971":"H3","972":"H3","973":"H3","974":"H3","976":"H3"};
+const DH19={H1a:60585,H1b:60090,H1c:57673,H2a:57386,H2b:55906,H2c:49648,H2d:55139,H3:39486};
+
+// Seuils ANAH 2024 pour MaPrimeRénov' [très modeste, modeste, intermédiaire] par nb occupants
+const IDF_DEPTS=new Set(["75","77","78","91","92","93","94","95"]);
+const ANAH_IDF  =[[23541,28657,40018],[34551,42058,58827],[41493,50513,70382],[48447,58981,82839],[55427,67457,94844],[6970,8478,11971]];
+const ANAH_HORS =[[17009,21805,30549],[24875,31889,44907],[29917,38349,54071],[34948,44802,63235],[40002,51281,72400],[5045,6462,9165]];
+
+function calcCategorie(revenu_str, nb_occ, dept) {
+  if(!revenu_str || revenu_str==="") return "inconnu";
+  const rev = parseFloat(revenu_str)||0;
+  if(rev<=0) return "inconnu";
+  const T = IDF_DEPTS.has(String(dept)) ? ANAH_IDF : ANAH_HORS;
+  const n = Math.max(1, Math.min(nb_occ||2, 10));
+  let row;
+  if(n<=5){ row=T[n-1]; }
+  else { const b=T[4],e=T[5],a=n-5; row=[b[0]+e[0]*a,b[1]+e[1]*a,b[2]+e[2]*a]; }
+  if(rev<=row[0]) return "tres_modeste";
+  if(rev<=row[1]) return "modeste";
+  if(rev<=row[2]) return "intermediaire";
+  return "aise";
+}
+const FP={elec:2.3,gaz:1.0,fioul:1.0,bois:1.0,reseau_chaleur:0.6};
+const CO2F={elec:0.079,gaz:0.227,fioul:0.324,bois:0.030,reseau_chaleur:0.110};
+const U_MUR={non_isole:2.0,isole_int_avant2000:0.55,isole_int_post2000:0.35,isole_ext:0.25,ossature_bois:0.30};
+const U_PB={non_isole:2.5,isole_50mm:0.5,isole_100mm:0.3};
+const U_PH={non_isole:2.0,isole_100mm:0.3,isole_200mm:0.18,toiture_terrasse_isole:0.45};
+const U_VIT={simple:5.8,double_pre1990:3.3,double_post2000:2.9,double_lowe:1.4,triple:0.7};
+// Rendements combinés Rg×Rd×Re×Rr selon arrêté 3CL-DPE 2021
+const RG_CH={
+  convecteur_elec:      {v:0.94, e:"elec"},   // Rg=1.0 × Rd=1.0 × Re=0.95 × Rr=0.99
+  radiateur_elec:       {v:0.96, e:"elec"},   // Rg=1.0 × Rd=1.0 × Re=0.97 × Rr=0.99
+  plancher_elec:        {v:0.98, e:"elec"},   // Rg=1.0 × Rd=1.0 × Re=1.0  × Rr=0.98
+  chaudiere_gaz:        {v:0.72, e:"gaz"},    // moyenne parc français (entre std 0.66 et cond 0.81)
+  chaudiere_gaz_std:    {v:0.66, e:"gaz"},    // Rg=0.80 × Rd=0.91 × Re=1.0 × Rr=0.90
+  chaudiere_gaz_cond:   {v:0.81, e:"gaz"},    // Rg=0.94 × Rd=0.91 × Re=1.0 × Rr=0.95
+  chaudiere_fioul_std:  {v:0.66, e:"fioul"},  // Rg=0.80 × Rd=0.91 × Re=1.0 × Rr=0.90
+  chaudiere_fioul_cond: {v:0.75, e:"fioul"},  // Rg=0.91 × Rd=0.91 × Re=1.0 × Rr=0.90
+  chaudiere_bois:       {v:0.58, e:"bois"},   // Rg=0.80 × Rd=0.91 × Re=1.0 × Rr=0.80
+  poele_bois:           {v:0.49, e:"bois"},   // Rg=0.65 × Rd=1.0  × Re=0.95 × Rr=0.80
+  pac_air_eau:          {scop:true, e:"elec"},
+  pac_air_air:          {scop:true, e:"elec"},
+  reseau_chaleur:       {v:0.72, e:"reseau_chaleur"}, // Rg=0.97 × Rd=0.87 × Re=0.95 × Rr=0.90
+};
+const SCOP={H1a:2.8,H1b:2.8,H1c:2.8,H2a:2.9,H2b:2.9,H2c:3.0,H2d:3.0,H3:3.2};
+// ECS : rendements Rg × Rd × Rs selon 3CL-DPE 2021
+const RG_ECS={
+  chaudiere_gaz:              {v:0.67, e:"gaz"},    // Rg=0.82 × Rd=0.91 × Rs=0.90
+  chaudiere_fioul:            {v:0.65, e:"fioul"},  // Rg=0.80 × Rd=0.91 × Rs=0.90
+  ballon_elec:                {v:0.80, e:"elec"},   // Rg=0.95 × Rs=0.84 (pertes stockage)
+  chauffe_eau_instantane_gaz: {v:0.82, e:"gaz"},   // Rg=0.90 × Rd=0.91 (instantané)
+  thermodynamique:            {v:2.50, e:"elec"},  // COP PAC ECS
+  solaire:                    {v:0.70, e:"gaz", sol:true},
+  reseau_chaleur:             {v:0.73, e:"reseau_chaleur"},
+};
+const ECL_H={H1a:1500,H1b:1445,H1c:1476,H2a:1500,H2b:1531,H2c:1566,H2d:1566,H3:1506};
+const TEF={H1a:11.3,H1b:11.2,H1c:11.7,H2a:12.4,H2b:12.5,H2c:13.9,H2d:14.5,H3:15.3};
+
+function classEP(v){return v<=70?"A":v<=110?"B":v<=180?"C":v<=250?"D":v<=330?"E":v<=420?"F":"G";}
+function classGES(v){return v<=6?"A":v<=11?"B":v<=30?"C":v<=50?"D":v<=70?"E":v<=100?"F":"G";}
+function pire(a,b){const o="ABCDEFG";return o.indexOf(a)>=o.indexOf(b)?a:b;}
+function val(key){return SEL[key]==="inconnu"?(PESSIMISTE[key]||"inconnu"):SEL[key];}
+function fmt(n){return new Intl.NumberFormat('fr-FR').format(Math.round(n));}
+
+// ── Calcul extractible ───────────────────────────────────────────────────────
+function computeEP(p) {
+  const Sh_niv = p.Sh / p.nb_et;
+  const perim = 4 * Math.sqrt(Sh_niv) * p.forme_f;
+  const Smur_brut = perim * 2.5 * p.nb_et;
+  const Smur = Smur_brut * p.mur_exp_f;
+  const Spb = Sh_niv;
+  const Sph = Sh_niv * p.sph_factor;
+  const Smur_o = Math.max(Smur - p.Svit, Smur * 0.65);
+
+  const Um=U_MUR[p.murs_v]||2.0, Upb=U_PB[p.pb_v]||2.5, Uph=U_PH[p.ph_v]||2.0, Uv=U_VIT[p.vit_v]||3.3;
+  const psi = p.murs_v==="non_isole"?0.85:p.murs_v==="isole_ext"?0.1:0.4;
+  const PT = psi * Math.sqrt(Smur_o) * 8;
+  const DR = 0.34 * ({naturelle:0.7,vmc_sf:0.55,vmc_hygro:0.45,vmc_df:0.40}[p.vmc_v]||0.7) * p.Sh;
+  const GV = Smur_o*Um + p.b_pb*Spb*Upb + Sph*Uph + p.Svit*Uv + PT + DR;
+
+  const dh = DH19[p.zone]||60000;
+  const Bch = GV * 0.80 * dh / 1000;
+  const rch = RG_CH[p.ch_v]||{v:0.74,e:"gaz"};
+  const Cch = Bch / (rch.scop?(SCOP[p.zone]||2.5):rch.v);
+
+  let Nmax = p.Sh<30?1:p.Sh<70?1.75-0.01875*(70-p.Sh):0.025*p.Sh;
+  const Nadeq = Nmax<1.75?Nmax:1.75+0.3*(Nmax-1.75);
+  const Becs = (56*Nadeq*(60-(TEF[p.zone]||12))*358*1.163)/1000;
+  const recs = RG_ECS[p.ecs_v]||{v:0.95,e:"elec"};
+  const Cecs = recs.sol?(Becs*0.40)/recs.v:Becs/recs.v;
+
+  const Cecl = 0.9*1.4*(ECL_H[p.zone]||1500)/1000*p.Sh;
+  const ep = (Cch*(FP[rch.e]||1)+Cecs*(FP[recs.e]||1)+Cecl*FP.elec)/p.Sh;
+  const ges = (Cch*(CO2F[rch.e]||0.2)+Cecs*(CO2F[recs.e]||0.2)+Cecl*CO2F.elec)/p.Sh;
+  return { ep, ges, cl:pire(classEP(ep),classGES(ges)), Cch, Cecs, Cecl, Ctot_ef:Cch+Cecs+Cecl, Smur };
+}
+
+// ── Scénarios d'amélioration ─────────────────────────────────────────────────
+const SCENARIOS = [
+  {
+    id:"combles", nom:"Isolation des combles / toiture", pack:false,
+    travaux:"Isolation des combles perdus par laine soufflée (R ≥ 7) ou rouleaux. Coût : 35–90 €/m² de plancher.",
+    overrides:{ ph_v:"isole_200mm" },
+    aide:"MaPrimeRénov' + CEE",
+    cout:(Sh,nb_et)=>{ const s=Sh/nb_et; return [Math.max(2000,Math.round(s*35)), Math.max(6000,Math.round(s*90))]; },
+    aideCalc:(cat,Sh,nb_et)=>{ const mpr={tres_modeste:25,modeste:20,intermediaire:15,aise:7}; const r=mpr[cat]||0; const s=Sh/nb_et; return [Math.round((r+10)*s), Math.round((r+20)*s)]; }
+  },
+  {
+    id:"murs_ite", nom:"Isolation des murs par l'extérieur (ITE)", pack:false,
+    travaux:"ITE : isolant ≥ 140 mm + bardage ou enduit de façade. Solution la plus performante. Coût : 110–240 €/m² de façade.",
+    overrides:{ murs_v:"isole_ext" },
+    aide:"MaPrimeRénov' + CEE",
+    cout:(Sh,nb_et)=>{ const Sm=Math.round(4*Math.sqrt(Sh/nb_et)*2.5*nb_et); return [Math.round(Sm*110), Math.round(Sm*240)]; },
+    aideCalc:(cat,Sh,nb_et,Smur)=>{ const mpr={tres_modeste:75,modeste:60,intermediaire:40,aise:15}; const r=mpr[cat]||0; return [Math.round((r+15)*Smur), Math.round((r+25)*Smur)]; }
+  },
+  {
+    id:"murs_iti", nom:"Isolation des murs par l'intérieur (ITI)", pack:false,
+    travaux:"Doublage isolant (laine minérale ou PSE) + plaque de plâtre. Moins coûteux que l'ITE. Coût : 40–90 €/m² de paroi.",
+    overrides:{ murs_v:"isole_int_post2000" },
+    aide:"MaPrimeRénov' + CEE",
+    cout:(Sh,nb_et)=>{ const Sm=Math.round(4*Math.sqrt(Sh/nb_et)*2.5*nb_et); return [Math.round(Sm*40), Math.round(Sm*90)]; },
+    aideCalc:(cat,Sh,nb_et,Smur)=>{ const mpr={tres_modeste:75,modeste:60,intermediaire:40,aise:15}; const r=mpr[cat]||0; return [Math.round((r+10)*Smur), Math.round((r+20)*Smur)]; }
+  },
+  {
+    id:"vitrage", nom:"Fenêtres double vitrage performant (Low-E)", pack:false,
+    travaux:"Menuiseries double vitrage à faible émissivité (Low-E), Uw ≤ 1,3 W/m²·K. Réduit les pertes vitrage de 40–60 %. Coût : 600–1 500 €/fenêtre.",
+    overrides:{ vit_v:"double_lowe" },
+    aide:"CEE",
+    cout:(Sh)=>{ const n=Math.max(4,Math.round(Sh/8)); return [n*600, n*1500]; },
+    aideCalc:(cat,Sh)=>{ const n=Math.max(4,Math.round(Sh/8)); return [n*60, n*90]; }
+  },
+  {
+    id:"pac", nom:"Pompe à chaleur air/eau + chauffe-eau thermodynamique", pack:false,
+    travaux:"PAC air/eau (SCOP ≥ 4) remplaçant la chaudière + chauffe-eau thermodynamique. Divise la facture de chauffage par 3. Coût : 10 000–18 000 €.",
+    overrides:{ ch_v:"pac_air_eau", ecs_v:"thermodynamique" },
+    aide:"MaPrimeRénov'",
+    cout:()=>[10000,18000],
+    aideCalc:(cat)=>{ const amt={tres_modeste:5000,modeste:4000,intermediaire:3000,aise:2000}; const a=amt[cat]||2500; return [a, a+500]; }
+  },
+  {
+    id:"vmc", nom:"VMC double flux", pack:false,
+    travaux:"Ventilation mécanique double flux avec échangeur thermique (η ≥ 85 %). Récupère la chaleur de l'air extrait. Coût : 7 000–10 000 €.",
+    overrides:{ vmc_v:"vmc_df" },
+    aide:"MaPrimeRénov'",
+    cout:()=>[7000,10000],
+    aideCalc:(cat)=>{ const amt={tres_modeste:2500,modeste:2000,intermediaire:1500,aise:500}; const a=amt[cat]||800; return [a, a+300]; }
+  },
+  {
+    id:"pack_enveloppe", nom:"Isolation complète de l'enveloppe (murs + toiture + fenêtres)", pack:true,
+    travaux:"ITE + isolation combles (R ≥ 7) + double vitrage Low-E. Réduit fortement les déperditions sans toucher au système de chauffage.",
+    overrides:{ murs_v:"isole_ext", ph_v:"isole_200mm", vit_v:"double_lowe" },
+    aide:"MaPrimeRénov' + CEE",
+    cout:(Sh,nb_et)=>{ const s=Sh/nb_et; const Sm=Math.round(4*Math.sqrt(s)*2.5*nb_et); const n=Math.max(4,Math.round(Sh/8)); return [Sm*110+Math.max(2000,Math.round(s*35))+n*600, Sm*240+Math.max(6000,Math.round(s*90))+n*1500]; },
+    aideCalc:(cat,Sh,nb_et,Smur)=>{ const mpr={tres_modeste:75,modeste:60,intermediaire:40,aise:15}; const r=mpr[cat]||0; const s=Sh/nb_et; const n=Math.max(4,Math.round(Sh/8)); return [Math.round((r+15)*Smur)+Math.round((r+10)*(s))+n*60, Math.round((r+25)*Smur)+Math.round((r+20)*(s))+n*90]; }
+  },
+  {
+    id:"pack_performance", nom:"Isolation complète + Pompe à chaleur", pack:true,
+    travaux:"ITE + isolation combles + vitrage Low-E + PAC air/eau + chauffe-eau thermodynamique. Combinaison la plus efficace pour une rénovation partielle ambitieuse.",
+    overrides:{ murs_v:"isole_ext", ph_v:"isole_200mm", vit_v:"double_lowe", ch_v:"pac_air_eau", ecs_v:"thermodynamique" },
+    aide:"MaPrimeRénov' + CEE",
+    cout:(Sh,nb_et)=>{ const s=Sh/nb_et; const Sm=Math.round(4*Math.sqrt(s)*2.5*nb_et); const n=Math.max(4,Math.round(Sh/8)); return [Sm*110+Math.max(2000,Math.round(s*35))+n*600+10000, Sm*240+Math.max(6000,Math.round(s*90))+n*1500+18000]; },
+    aideCalc:(cat,Sh,nb_et,Smur,cMin,cMax)=>{ const rates={tres_modeste:0.55,modeste:0.45,intermediaire:0.35,aise:0.20}; const r=rates[cat]||0.30; return [Math.round(cMin*r), Math.round(cMax*r)]; }
+  },
+  {
+    id:"pack_confort", nom:"Pack Confort — Combles + Vitrage + VMC", pack:true,
+    travaux:"Isolation des combles (R ≥ 7) + double vitrage Low-E + VMC double flux. Combinaison efficace et accessible.",
+    overrides:{ ph_v:"isole_200mm", vit_v:"double_lowe", vmc_v:"vmc_df" },
+    aide:"MaPrimeRénov' + CEE",
+    cout:(Sh,nb_et)=>{ const s=Sh/nb_et; const n=Math.max(4,Math.round(Sh/8)); return [Math.max(2000,Math.round(s*35))+n*600+7000, Math.max(6000,Math.round(s*90))+n*1500+10000]; },
+    aideCalc:(cat,Sh,nb_et)=>{ const mpr={tres_modeste:25,modeste:20,intermediaire:15,aise:7}; const r=mpr[cat]||0; const s=Sh/nb_et; const n=Math.max(4,Math.round(Sh/8)); const va={tres_modeste:2500,modeste:2000,intermediaire:1500,aise:500}; const a=va[cat]||800; return [Math.round((r+10)*s)+n*60+a, Math.round((r+20)*s)+n*90+a+300]; }
+  },
+  {
+    id:"pack_global", nom:"Rénovation globale d'ampleur", pack:true,
+    travaux:"Isolation combles + murs ITE + vitrage Low-E + pompe à chaleur + VMC DF + plancher bas. Éligible MaPrimeRénov' Accompagné.",
+    overrides:{ ph_v:"isole_200mm", murs_v:"isole_ext", vit_v:"double_lowe", ch_v:"pac_air_eau", vmc_v:"vmc_df", ecs_v:"thermodynamique", pb_v:"isole_100mm" },
+    aide:"MaPrimeRénov' Accompagné",
+    cout:(Sh,nb_et)=>{ const s=Sh/nb_et; const Sm=Math.round(4*Math.sqrt(s)*2.5*nb_et); const n=Math.max(4,Math.round(Sh/8)); return [Math.max(2000,Math.round(s*35))+Sm*110+n*600+10000+7000+Math.round(s*15), Math.max(6000,Math.round(s*90))+Sm*240+n*1500+18000+10000+Math.round(s*40)]; },
+    aideCalc:(cat,Sh,nb_et,Smur,cMin,cMax)=>{ const rates={tres_modeste:0.70,modeste:0.60,intermediaire:0.45,aise:0.30}; const r=rates[cat]||0.40; return [Math.round(Math.min(cMin*r,70000)), Math.round(Math.min(cMax*r,70000))]; }
+  },
+];
+
+function calcFiabilite() {
+  let s = 90;
+  if(SEL.annee==="inconnu") s-=10;
+  if(document.getElementById("departement").value==="inconnu") s-=8;
+  if(SEL.type==="maison"&&SEL.forme==="inconnu") s-=5;
+  if(SEL.etages==="inconnu") s-=6;
+  if(SEL.type==="maison"&&SEL.mitoyen_maison==="inconnu") s-=5;
+  if(SEL.type!=="maison"&&SEL.position_appart==="inconnu") s-=5;
+  if(SEL.murs==="inconnu") s-=12;
+  if(SEL.pb==="inconnu") s-=8;
+  if(SEL.ph==="inconnu") s-=12;
+  if(SEL.vitrage==="inconnu") s-=8;
+  if(SEL.vmc==="inconnu") s-=5;
+  if(SEL.chauffage==="inconnu") s-=12;
+  if(SEL.regulation==="inconnu") s-=5;
+  if(SEL.ecs==="inconnu") s-=8;
+  if(fen_inconnu===null||fen_inconnu===true) s-=5;
+  return Math.max(20, s);
+}
+
+// ── Calcul principal ─────────────────────────────────────────────────────────
+const PHOTOS = {
+  combles:      ["photos/Isolation%20comble.jpg"],
+  murs_ite:     ["photos/isolation%20exterieur.webp"],
+  murs_iti:     ["photos/isolation%20interieur.webp"],
+  vitrage:      ["photos/vitrage%20E%20low.jpg"],
+  pac:          ["photos/PAC%20air%20eau.webp", "photos/chauffe%20eau%20thermostatique.jpg"],
+  vmc:          ["photos/VMC.webp", "photos/VMC%202.webp", "photos/VMC-DF-.jpg"],
+  pack_confort: ["photos/Isolation%20comble.jpg", "photos/vitrage%20E%20low.jpg", "photos/VMC-DF-.jpg"],
+  pack_global:      ["photos/isolation%20exterieur.webp", "photos/PAC%20air%20eau.webp", "photos/vitrage%20E%20low.jpg"],
+  pack_enveloppe:   ["photos/isolation%20exterieur.webp", "photos/Isolation%20comble.jpg", "photos/vitrage%20E%20low.jpg"],
+  pack_performance: ["photos/isolation%20exterieur.webp", "photos/PAC%20air%20eau.webp", "photos/chauffe%20eau%20thermostatique.jpg"],
+};
+function getPhotos(id){ return PHOTOS[id]||PHOTOS.combles; }
+
+// ── Modal ─────────────────────────────────────────────────────────────────────
+let _modalCard = null;
+function openModal(card, cl, aideStr, netStr) {
+  _modalCard = card;
+  document.getElementById("modal-title").textContent = card.nom;
+  document.getElementById("modal-letters").innerHTML =
+    `<span class="et-sm et-${cl}" style="width:34px;height:27px;font-size:16px">${cl}</span>
+     <span style="color:#aabbc8;font-size:18px">→</span>
+     <span class="et-sm et-${card.newCl}" style="width:34px;height:27px;font-size:16px">${card.newCl}</span>
+     <span style="font-size:12px;color:#5a8070;font-weight:700;margin-left:4px">Gain de ${card.newCl < cl ? "plusieurs" : "1"} classe${card.newCl < cl ? "s" : ""} DPE</span>`;
+  document.getElementById("modal-desc").textContent = card.travaux;
+  const photos = getPhotos(card.id);
+  document.getElementById("modal-photos").innerHTML = photos.map(url=>
+    `<div class="photo-card"><img src="${url}" alt="Travaux artisan" loading="lazy"/><div class="photo-caption">Réalisé par nos artisans</div></div>`
+  ).join("");
+  document.getElementById("modal-prices").innerHTML = `
+    <div class="price-col"><div class="price-lbl">Coût des travaux</div><div class="price-gross">${fmt(card.cMin)} – ${fmt(card.cMax)} €</div></div>
+    <div class="price-col"><div class="price-lbl">Aides potentielles</div><div class="price-aide">${aideStr}</div></div>
+    <div class="price-col"><div class="price-lbl">Reste à charge</div><div class="price-net">${netStr}</div></div>
+    ${card.savingsMonthly>0?`<div class="price-col"><div class="price-lbl">Économie estimée</div><div class="price-sav">~${fmt(card.savingsMonthly)} €/mois</div></div>`:""}
+  `;
+  document.getElementById("travaux-modal").style.display = "flex";
+  document.body.style.overflow = "hidden";
+}
+function closeModal() {
+  document.getElementById("travaux-modal").style.display = "none";
+  document.body.style.overflow = "";
+}
+function contactArtisan() {
+  const email = document.getElementById("contact_email").value;
+  const phone = document.getElementById("contact_phone").value;
+  const travaux = _modalCard ? _modalCard.nom : "";
+  alert(`Demande envoyée pour : ${travaux}\nNous vous contacterons${phone?" au "+phone:email?" par email":""}.\nRéponse sous 24h.`);
+}
+function contactExpert() {
+  const email = document.getElementById("contact_email").value;
+  const phone = document.getElementById("contact_phone").value;
+  alert(`Demande de diagnostic DPE envoyée.\nNous vous contacterons${phone?" au "+phone:email?" par email":""}.\nRéponse sous 24h.`);
+}
+
+function calculer() {
+  const Sh  = parseFloat(document.getElementById("surface").value)||80;
+  const dep = document.getElementById("departement").value;
+  const zone = dep==="inconnu"?"H1b":(ZONES[dep]||"H1a");
+  const type = SEL.type||"maison";
+  const nb_et = type==="maison"
+    ? (SEL.etages==="inconnu"?2:parseInt(SEL.etages))
+    : (SEL.etages_appart==="inconnu"?1:parseInt(SEL.etages_appart));
+  const hyp = [];
+
+  // Travaux récents → mise à jour SEL
+  if(TRAVAUX_SEL.size>0 && SEL.travaux_recents==="oui"){
+    if(TRAVAUX_SEL.has("murs")&&SEL.murs==="inconnu"){SEL.murs="isole_int_post2000";refreshVig("murs","isole_int_post2000");}
+    if(TRAVAUX_SEL.has("toiture")&&SEL.ph==="inconnu"){SEL.ph="isole_200mm";refreshVig("ph","isole_200mm");}
+    if(TRAVAUX_SEL.has("plancher")&&SEL.pb==="inconnu"){SEL.pb="isole_100mm";refreshVig("pb","isole_100mm");}
+    if(TRAVAUX_SEL.has("vitrage")&&SEL.vitrage==="inconnu"){SEL.vitrage="double_post2000";refreshVig("vitrage","double_post2000");}
+    if(TRAVAUX_SEL.has("vmc")&&SEL.vmc==="inconnu"){SEL.vmc="vmc_sf";refreshVig("vmc","vmc_sf");}
+    if(TRAVAUX_SEL.has("chaudiere_cond")&&SEL.chauffage==="inconnu"){SEL.chauffage="chaudiere_gaz_cond";refreshVig("chauffage","chaudiere_gaz_cond");}
+    if(TRAVAUX_SEL.has("pac")&&SEL.chauffage==="inconnu"){SEL.chauffage="pac_air_eau";refreshVig("chauffage","pac_air_eau");}
+    if(TRAVAUX_SEL.has("chauffe_eau_thermo")&&SEL.ecs==="inconnu"){SEL.ecs="thermodynamique";refreshVig("ecs","thermodynamique");}
+  }
+
+  // Hypothèses
+  const anneeRaw=SEL.annee;
+  if(anneeRaw==="inconnu")        hyp.push("Année : avant 1975 (hypothèse)");
+  if(type==="maison"&&SEL.etages==="inconnu")          hyp.push("Niveaux : 2");
+  if(type!=="maison"&&SEL.etages_appart==="inconnu")  hyp.push("Type : Simplex");
+  if(dep==="inconnu")             hyp.push("Département : zone H1b");
+  if(SEL.forme==="inconnu")       hyp.push("Forme : en L (défavorable)");
+  if(type==="maison"&&SEL.mitoyen_maison==="inconnu") hyp.push("Mitoyenneté : aucun côté");
+  if(type!=="maison"&&SEL.position_appart==="inconnu") hyp.push("Position : angle");
+  if(SEL.murs==="inconnu")        hyp.push("Murs : non isolés");
+  if(SEL.pb==="inconnu")          hyp.push("Plancher bas : non isolé");
+  if(SEL.ph==="inconnu")          hyp.push("Toiture : non isolée");
+  if(SEL.vitrage==="inconnu")     hyp.push("Vitrage : double av. 1990");
+  if(SEL.vmc==="inconnu")         hyp.push("Ventilation : naturelle");
+  if(SEL.chauffage==="inconnu")   hyp.push("Chauffage : chaudière gaz ancienne");
+  if(SEL.regulation==="inconnu")  hyp.push("Régulation : aucune");
+  if(SEL.ecs==="inconnu")         hyp.push("ECS : ballon électrique");
+
+  // Géométrie
+  const formeV=val("forme"), forme_f={carre:1.0,en_l:1.18,autre:1.08}[formeV]||1.0;
+  const mitoyen_v=val("mitoyen_maison"), pos_v=val("position_appart");
+  let mur_exp_f=1.0, b_pb=0.9, sph_factor=1.0;
+  if(type==="maison"){
+    mur_exp_f={0:1.0,1:0.82,2:0.64}[mitoyen_v]||1.0;
+  } else {
+    mur_exp_f={milieu:0.5,coin:0.75,dernier:0.6,rdc:0.6}[pos_v]||0.6;
+    b_pb=(pos_v==="rdc")?0.9:0.1;
+    sph_factor=(pos_v==="dernier")?1.0:0.1;
+  }
+
+  const nf=document.getElementById("nb_fen").value;
+  let Svit;
+  if(fen_inconnu===null||fen_inconnu===true||!nf){ const e=Math.round(Sh/8); Svit=e*1.4; hyp.push(`Fenêtres : ${e} ouvertures estimées`); }
+  else Svit=parseFloat(nf)*1.4;
+
+  const BASE = { Sh, zone, nb_et, forme_f, mur_exp_f, b_pb, sph_factor, Svit,
+    murs_v:val("murs"), pb_v:val("pb"), ph_v:val("ph"),
+    vit_v:val("vitrage"), vmc_v:val("vmc"), ch_v:val("chauffage"), ecs_v:val("ecs") };
+
+  const res = computeEP(BASE);
+  const fiab = calcFiabilite();
+  const useDeclared = SEL.dpe_connu==="oui" && SEL.dpe_actuel;
+  const cl = useDeclared ? SEL.dpe_actuel : res.cl;
+
+  goStep(6);
+
+  // Affichage score
+  document.querySelector(".res-header-label").textContent = useDeclared ? "Votre DPE actuel" : "Votre DPE estimé";
+  const et=document.getElementById("r_et");
+  // Badge DPE : CSS pur + Arial Black (system font garantie, jamais pixelisée)
+  et.className = `et-big et-${cl}`;
+  et.textContent = cl;
+  if(useDeclared){
+    document.getElementById("r_ep").textContent="";
+    document.getElementById("r_ges").textContent="";
+    document.getElementById("r_fiab").style.display="none";
+  } else {
+    document.getElementById("r_ep").textContent=`${Math.round(res.ep)} kWh EP/m².an`;
+    document.getElementById("r_ges").textContent=`${res.ges.toFixed(1)} kgCO₂eq/m².an`;
+    document.getElementById("r_fiab").textContent=`${fiab} % de fiabilité`;
+    document.getElementById("r_fiab").style.display="";
+  }
+  document.getElementById("r_dpe_compare").innerHTML="";
+  // Bouton expert DPE si pas de DPE déclaré
+  document.getElementById("r_dpe_expert_wrap").style.display = (SEL.dpe_connu!=="oui") ? "block" : "none";
+  // Message location selon lettre DPE
+  const locEl = document.getElementById("r_location_msg");
+  const locMsgs = {
+    G: { cls:"interdit", txt:"Interdit à la location depuis le 1ᵉʳ janvier 2025 (décret Climat et Résilience)." },
+    F: { cls:"bientot",  txt:"Sera interdit à la location à partir du 1ᵉʳ janvier 2028." },
+    E: { cls:"bientot",  txt:"Sera interdit à la location à partir du 1ᵉʳ janvier 2034." },
+  };
+  const lm = locMsgs[cl];
+  if(lm){ locEl.className="location-msg "+lm.cls; locEl.textContent=lm.txt; locEl.style.display="block"; }
+  else   { locEl.className="location-msg ok"; locEl.textContent="Peut être loué sans restriction énergétique."; locEl.style.display="block"; }
+  // Alerte inlouable proéminente dans la section travaux (G = interdit, F = bientôt)
+  const alertMap = {
+    G: { cls:"", title:"Logement interdit à la location", desc:"Ce logement (classe G) ne peut plus être mis en location depuis le 1ᵉʳ janvier 2025. Des travaux sont obligatoires pour le remettre sur le marché locatif.", ico:"🚫" },
+    F: { cls:" alert-bientot", title:"Logement bientôt inlouable", desc:"Ce logement (classe F) sera interdit à la location dès le 1ᵉʳ janvier 2028. Anticipez les travaux dès maintenant pour éviter cette restriction.", ico:"⚠️" },
+    E: { cls:" alert-bientot", title:"Restriction locative à venir", desc:"Ce logement (classe E) sera interdit à la location à partir de 2034. Des travaux d'amélioration énergétique sont recommandés.", ico:"⏳" },
+  };
+  const existingAlert = document.getElementById("alert_inlouable");
+  if(existingAlert) existingAlert.remove();
+  if(alertMap[cl]){
+    const a = alertMap[cl];
+    const alertDiv = document.createElement("div");
+    alertDiv.id = "alert_inlouable";
+    alertDiv.className = "alert-inlouable" + a.cls;
+    alertDiv.innerHTML = `<div class="alert-inlouable-ico">${a.ico}</div><div class="alert-inlouable-txt"><div class="alert-inlouable-title">${a.title}</div><div class="alert-inlouable-desc">${a.desc}</div></div>`;
+    const container = document.getElementById("r_ameliorations");
+    container.parentNode.insertBefore(alertDiv, container);
+  }
+
+  // Barres
+  const seuils={A:70,B:110,C:180,D:250,E:330,F:420,G:500};
+  "ABCDEFG".split("").forEach(l=>{
+    const b=document.getElementById("bar_"+l); if(!b) return; b.style.width="0";
+    if(l===classEP(res.ep)) setTimeout(()=>{b.style.width=Math.max(res.ep/seuils[l]*100,6)+"%";},200);
+  });
+
+  // Détail
+  document.getElementById("r_ch").textContent=`${fmt(res.Cch)} kWh/an`;
+  document.getElementById("r_ecs2").textContent=`${fmt(res.Cecs)} kWh/an`;
+  document.getElementById("r_ecl").textContent=`${fmt(res.Cecl)} kWh/an`;
+  document.getElementById("r_ef").textContent=`${fmt(res.Ctot_ef)} kWh EF/an`;
+  document.getElementById("r_ep2").textContent=`${Math.round(res.ep)} kWh EP/m².an`;
+  document.getElementById("r_co2").textContent=`${res.ges.toFixed(1)} kgCO₂eq/m².an`;
+
+  // Hypothèses
+  document.getElementById("r_hyp").innerHTML=hyp.length
+    ?`<div class="hyp-box">Hypothèses appliquées :<br>${hyp.join(" · ")}</div>`:"";
+
+  // Catégorie revenus pour aides
+  const nb_occupants = parseInt(document.getElementById("nb_occupants").value)||2;
+  const revenu_fiscal = document.getElementById("revenu_fiscal").value;
+  const categorie = calcCategorie(revenu_fiscal, nb_occupants, dep);
+  const catLabels = {tres_modeste:"Revenus très modestes",modeste:"Revenus modestes",intermediaire:"Revenus intermédiaires",aise:"Revenus aisés"};
+
+  // Scénarios d'amélioration
+  const PRIX_KWH = {elec:0.2516, gaz:0.1292, fioul:0.138, bois:0.065, reseau_chaleur:0.095};
+  const ORDER="ABCDEFG";
+  const curIdx=ORDER.indexOf(cl);
+  const cards=[];
+  // When DPE is declared, use pessimistic defaults for unknown params so that
+  // renovation scenarios compute improvements from a realistically bad baseline
+  // (avoids skipping D/C target groups when building params default to good values)
+  const pessDefaults = {
+    murs_v:"non_isole", pb_v:"non_isole", ph_v:"non_isole",
+    vit_v:"double_pre1990", vmc_v:"naturelle", ch_v:"chaudiere_gaz_std", ecs_v:"ballon_elec"
+  };
+  const BASE_RENO = useDeclared ? Object.fromEntries(
+    Object.entries({...BASE}).map(([k,v])=>[k, (v==="inconnu" && pessDefaults[k]) ? pessDefaults[k] : v])
+  ) : BASE;
+  const res_reno_base = useDeclared ? computeEP(BASE_RENO) : res;
+  const rch_base = RG_CH[BASE_RENO.ch_v]||{e:"gaz"};
+  const rcs_base = RG_ECS[BASE_RENO.ecs_v]||{e:"elec"};
+  const costBeforeComputed = res_reno_base.Cch*(PRIX_KWH[rch_base.e]||0.15) + res_reno_base.Cecs*(PRIX_KWH[rcs_base.e]||PRIX_KWH.elec) + res_reno_base.Cecl*PRIX_KWH.elec;
+  // 3CL method overestimates real bills by 35-50%; use realistic midpoints when DPE is known
+  const EP_MID = {A:50, B:90, C:145, D:215, E:290, F:375, G:500};
+  const costBefore = useDeclared
+    ? (EP_MID[cl]||EP_MID.G) * Sh * 0.12
+    : costBeforeComputed * 0.65;
+  for(const sc of SCENARIOS){
+    const ov={};
+    for(const [k,v] of Object.entries(sc.overrides)) ov[k]=v;
+    const r2=computeEP({...BASE_RENO,...ov});
+    const newIdx = ORDER.indexOf(r2.cl);
+    if(newIdx<curIdx && newIdx<=ORDER.indexOf('D')){
+      const coutsRaw=sc.cout(Sh,nb_et); const couts=[Math.round(coutsRaw[0]*0.8), Math.round(coutsRaw[1]*0.8)];
+      const aideRaw = sc.aideCalc ? sc.aideCalc(categorie,Sh,nb_et,res.Smur,couts[0],couts[1]) : [0,0];
+      const aideAmt = Array.isArray(aideRaw) ? aideRaw : [aideRaw, aideRaw];
+      const rch_a = RG_CH[ov.ch_v||BASE.ch_v]||rch_base;
+      const rcs_a = RG_ECS[ov.ecs_v||BASE.ecs_v]||rcs_base;
+      const costAfterComputed = r2.Cch*(PRIX_KWH[rch_a.e]||0.15) + r2.Cecs*(PRIX_KWH[rcs_a.e]||PRIX_KWH.elec) + r2.Cecl*PRIX_KWH.elec;
+      const improvRatio = costBeforeComputed > 0 ? Math.max(0, 1 - costAfterComputed/costBeforeComputed) : 0;
+      const savingsMonthly = Math.max(0, Math.round(costBefore * improvRatio / 12));
+      cards.push({...sc, newCl:r2.cl, cMin:couts[0], cMax:couts[1], aideAmt, savingsMonthly});
+    }
+  }
+
+  const container=document.getElementById("r_ameliorations");
+  document.getElementById("r_travaux_count").textContent = cards.length ? `${cards.length} option${cards.length>1?"s":""}` : "";
+  const aideBanner = categorie==="inconnu"
+    ? `<div class="aide-info-banner">Revenus non renseignés — retournez à l'étape Aides pour calculer vos aides personnalisées (MaPrimeRénov', CEE).</div>`
+    : "";
+  const renderCard = (c,idx)=>{
+    const catTag = categorie!=="inconnu"
+      ? `<span class="amelio-cat-tag cat-${categorie}">${catLabels[categorie]}</span>`
+      : `<span style="font-size:10px;color:#9ab8c8;font-style:italic">Renseignez vos revenus pour des aides personnalisées</span>`;
+    let aideStr, netStr;
+    if(categorie==="inconnu"){
+      aideStr=`<span class="price-unknown">Selon vos revenus</span>`;
+      netStr=`<span class="price-unknown">—</span>`;
+    } else if(c.aideAmt[1]>0){
+      const aLow=Math.min(c.aideAmt[0],c.cMax), aHigh=Math.min(c.aideAmt[1],c.cMax);
+      aideStr = aLow===aHigh ? `env. ${fmt(aHigh)} €` : `${fmt(aLow)} – ${fmt(aHigh)} €`;
+      const netMin=Math.max(0,c.cMin-aHigh), netMax=Math.max(0,c.cMax-aLow);
+      netStr = netMin===0&&netMax===0?`Couvert`:netMin===0?`0 – ${fmt(netMax)} €`:`${fmt(netMin)} – ${fmt(netMax)} €`;
+    } else {
+      aideStr=`<span class="price-unknown">Non éligible</span>`;
+      netStr=`${fmt(c.cMin)} – ${fmt(c.cMax)} €`;
+    }
+    const aideStrClean=aideStr.replace(/<[^>]+>/g,''), netStrClean=netStr.replace(/<[^>]+>/g,'');
+    return `<div class="amelio-card${c.pack?" pack":""}" onclick="openModal(window._cards[${idx}],'${cl}','${aideStrClean}','${netStrClean}')">
+      <div class="amelio-card-top">
+        <div class="amelio-name">${c.nom}</div>
+        <div class="amelio-letters"><span class="et-sm et-${cl}">${cl}</span><span class="amelio-arr">→</span><span class="et-sm et-${c.newCl}">${c.newCl}</span></div>
+      </div>
+      <div class="amelio-works">${c.travaux}</div>
+      <div class="amelio-prices">
+        <div class="price-col"><div class="price-lbl">Coût des travaux</div><div class="price-gross">${fmt(c.cMin)} – ${fmt(c.cMax)} €</div></div>
+        <div class="price-col"><div class="price-lbl">Aides potentielles</div><div class="price-aide">${aideStr}</div></div>
+        <div class="price-col"><div class="price-lbl">Reste à charge</div><div class="price-net">${netStr}</div></div>
+      </div>
+      <div class="amelio-tags"><span class="amelio-aide-tag">${c.aide}</span>${catTag}</div>
+      ${c.savingsMonthly>0?`<div class="savings-banner">Économie estimée : ~${fmt(c.savingsMonthly)} €/mois après travaux</div>`:""}
+      <div class="amelio-card-expand">Voir les détails &amp; contacter nos artisans</div>
+    </div>`;
+  };
+
+  window._cards = cards;
+
+  if(!cards.length){
+    container.innerHTML=aideBanner+`<div class="amelio-none">Votre logement est déjà bien classé. Continuez à entretenir vos équipements.</div>`;
+  } else {
+    // Group by target class, only classes strictly better than current AND ≥ D
+    // Displayed D → C → B → A (simplest target first, most ambitious last)
+    // Within each group: sorted by cost ascending (simplest/cheapest solution first)
+    const groups = {};
+    cards.forEach((c,idx)=>{ (groups[c.newCl]||(groups[c.newCl]=[])).push({c,idx}); });
+    Object.keys(groups).forEach(k => groups[k].sort((a,b)=>a.c.cMin-b.c.cMin));
+
+    const targetLabels = {
+      D:"Travaux essentiels — 1ère amélioration",
+      C:"Rénovation intermédiaire",
+      B:"Rénovation ambitieuse",
+      A:"Performance maximale (classe A)"
+    };
+    // Only show targets strictly better than current class
+    const validTargets = ['D','C','B','A'].filter(t => ORDER.indexOf(t) < curIdx);
+    let html = aideBanner;
+    validTargets.forEach(target=>{
+      const g = groups[target];
+      if(!g||!g.length) return;
+      const steps = curIdx - ORDER.indexOf(target);
+      const stepsLbl = steps===1 ? "+1 classe" : `+${steps} classes`;
+      html += `<div class="target-section">
+        <div class="target-header">
+          <div class="target-header-lbl">Objectif</div>
+          <span class="et-sm target-header-cl et-${target}">${target}</span>
+          <div class="target-header-desc">${targetLabels[target]}<span style="font-size:11px;color:#8aabb8;font-weight:500;margin-left:6px">${stepsLbl}</span></div>
+        </div>
+        ${g.map(({c,idx})=>renderCard(c,idx)).join("")}
+      </div>`;
+    });
+    const total = cards.length;
+    document.getElementById("r_travaux_count").textContent = `${total} option${total>1?"s":""}`;
+    container.innerHTML = html;
+  }
+}
+
+function refreshVig(key, newVal) {
+  const c=document.getElementById("opt_"+key); if(!c) return;
+  c.querySelectorAll(".vig").forEach(v=>{
+    const opt=OPTS[key].find(o=>o.val===newVal); if(!opt) return;
+    v.classList.toggle("sel", v.querySelector("span")&&v.querySelector("span").textContent===opt.lbl);
+  });
+}
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+buildAll();
+syncFen();
+function clickVal(key, v) {
+  const c=document.getElementById("opt_"+key); if(!c) return;
+  const vig=[...c.querySelectorAll(".vig")].find(el=>{
+    const o=OPTS[key]&&OPTS[key].find(o=>o.val===v);
+    return o&&el.querySelector("span")&&el.querySelector("span").textContent===o.lbl;
+  });
+  if(vig) vig.click();
+}
+clickVal("statut","proprietaire");
+clickVal("dpe_connu","non");
+clickVal("clim","non");
+</script>
+</body>
+</html>
+
