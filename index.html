@@ -783,7 +783,7 @@ const OPTS = {
   ],
   travaux_recents: [
     { val:"oui",     ico:"oui",     lbl:"Oui, des travaux ont été réalisés" },
-    { val:"non",     ico:"non",     lbl:"Non, aucun travaux récents" },
+    { val:"non",     ico:"non",     lbl:"Non, pas de travaux récents" },
     { val:"inconnu", ico:"question",lbl:"Je ne sais pas", jnsp:true },
   ],
   murs: [
@@ -1345,7 +1345,7 @@ function calculer() {
   // Alerte inlouable proéminente dans la section travaux (G = interdit, F = bientôt)
   const alertMap = {
     G: { cls:"", title:"Logement interdit à la location", desc:"Ce logement (classe G) ne peut plus être mis en location depuis le 1ᵉʳ janvier 2025. Des travaux sont obligatoires pour le remettre sur le marché locatif.", ico:"🚫" },
-    F: { cls:" alert-bientot", title:"Logement bientôt inlouable", desc:"Ce logement (classe F) sera interdit à la location dès le 1ᵉʳ janvier 2028. Anticipez les travaux dès maintenant pour éviter cette restriction.", ico:"⚠️" },
+    F: { cls:" alert-bientot", title:"Logement bientôt interdit à la location", desc:"Ce logement (classe F) sera interdit à la location dès le 1ᵉʳ janvier 2028. Anticipez les travaux dès maintenant pour éviter cette restriction.", ico:"⚠️" },
     E: { cls:" alert-bientot", title:"Restriction locative à venir", desc:"Ce logement (classe E) sera interdit à la location à partir de 2034. Des travaux d'amélioration énergétique sont recommandés.", ico:"⏳" },
   };
   const existingAlert = document.getElementById("alert_inlouable");
