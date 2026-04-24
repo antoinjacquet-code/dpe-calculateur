@@ -1255,6 +1255,11 @@ function contactArtisan() {
   const travaux = _modalCard ? _modalCard.nom : "";
   alert(`Demande envoyée pour : ${travaux}\nNous vous contacterons${phone?" au "+phone:email?" par email":""}.\nRéponse sous 24h.`);
 }
+function contactArtisanDevis() {
+  const email = document.getElementById("contact_email").value;
+  const phone = document.getElementById("contact_phone").value;
+  alert(`Demande de devis envoyée !\nUn artisan agréé RGE vous contactera${phone?" au "+phone:email?" par email":""}.\nRéponse sous 24h · Devis gratuit et sans engagement.`);
+}
 function contactExpert() {
   const email = document.getElementById("contact_email").value;
   const phone = document.getElementById("contact_phone").value;
@@ -1420,11 +1425,13 @@ function calculer() {
   const rch_base = RG_CH[BASE_RENO.ch_v]||{e:"gaz"};
   const rcs_base = RG_ECS[BASE_RENO.ecs_v]||{e:"elec"};
   const costBeforeComputed = res_reno_base.Cch*(PRIX_KWH[rch_base.e]||0.15) + res_reno_base.Cecs*(PRIX_KWH[rcs_base.e]||PRIX_KWH.elec) + res_reno_base.Cecl*PRIX_KWH.elec;
-  // 3CL method overestimates real bills by 35-50%; use realistic midpoints when DPE is known
-  const EP_MID = {A:50, B:90, C:145, D:215, E:290, F:375, G:500};
-  const costBefore = useDeclared
-    ? (EP_MID[cl]||EP_MID.G) * Sh * 0.12
-    : costBeforeComputed * 0.65;
+  // Calibrated monthly base cost against real French energy bills:
+  // studio ~80€/mois, 60m²~110€/mois, 100m²~165€/mois (ref. classe D)
+  const costDbaseMonthly = 50 + 1.15 * Sh;
+  const CLASS_MULT = {A:0.23, B:0.42, C:0.67, D:1.0, E:1.35, F:1.74, G:2.2};
+  const costBeforeMonthly = useDeclared
+    ? costDbaseMonthly * (CLASS_MULT[cl] || 1.0)
+    : costBeforeComputed * 0.65 / 12;
   for(const sc of SCENARIOS){
     const ov={};
     for(const [k,v] of Object.entries(sc.overrides)) ov[k]=v;
@@ -1438,7 +1445,7 @@ function calculer() {
       const rcs_a = RG_ECS[ov.ecs_v||BASE.ecs_v]||rcs_base;
       const costAfterComputed = r2.Cch*(PRIX_KWH[rch_a.e]||0.15) + r2.Cecs*(PRIX_KWH[rcs_a.e]||PRIX_KWH.elec) + r2.Cecl*PRIX_KWH.elec;
       const improvRatio = costBeforeComputed > 0 ? Math.max(0, 1 - costAfterComputed/costBeforeComputed) : 0;
-      const savingsMonthly = Math.max(0, Math.round(costBefore * improvRatio / 12));
+      const savingsMonthly = Math.max(0, Math.round(costBeforeMonthly * improvRatio));
       cards.push({...sc, newCl:r2.cl, cMin:couts[0], cMax:couts[1], aideAmt, savingsMonthly});
     }
   }
@@ -1520,6 +1527,13 @@ function calculer() {
     });
     const total = cards.length;
     document.getElementById("r_travaux_count").textContent = `${total} option${total>1?"s":""}`;
+    html += `<div style="margin-top:24px;padding:0 2px">
+      <button class="btn-artisan" onclick="contactArtisanDevis()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8 19.79 19.79 0 010.18 1.18 2 2 0 012.18 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.15a16 16 0 006.29 6.29l1.42-1.42a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.09v2.83z"/></svg>
+        Être contacté par un artisan agréé RGE — Devis gratuit
+      </button>
+      <div class="btn-artisan-note">Artisans certifiés RGE · Réponse sous 24h · Sans engagement</div>
+    </div>`;
     container.innerHTML = html;
   }
 }
