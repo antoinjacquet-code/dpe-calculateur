@@ -452,23 +452,6 @@
     <div class="step-title">Isolation et enveloppe</div>
     <div class="err-box" id="err3">Veuillez indiquer le nombre de fenêtres ou cliquer sur « Je ne sais pas ».</div>
 
-    <!-- Fenêtres en premier, bien visible -->
-    <div class="q-row fen-row">
-      <div class="q-label" style="font-size:14px;font-weight:700;color:#1a2e3b">Nombre de fenêtres <span style="color:#e04040">*</span></div>
-      <div style="display:flex;align-items:center;gap:14px;flex:1;flex-wrap:wrap">
-        <div class="counter">
-          <button class="cbtn" onclick="chg('nb_fen',-1)">−</button>
-          <input class="cinput" type="number" id="nb_fen" value="" placeholder="?" min="0" max="50"/>
-          <button class="cbtn" onclick="chg('nb_fen',1)">+</button>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:4px">
-          <span style="font-size:12px;color:#7a9aaa">environ 1,4 m² par ouverture</span>
-          <a class="jnsp-link" id="fen_btn" onclick="toggleFen()">Je ne sais pas</a>
-        </div>
-      </div>
-    </div>
-    <div class="q-sep"></div>
-
     <div class="q-row">
       <div class="q-label">Isolation des murs extérieurs</div>
       <div class="q-options" id="opt_murs"></div>
@@ -487,6 +470,20 @@
     <div class="q-row">
       <div class="q-label">Type de vitrage</div>
       <div class="q-options" id="opt_vitrage"></div>
+    </div>
+    <div class="q-row fen-row" style="margin-top:10px">
+      <div class="q-label">Nombre de fenêtres <span style="color:#e04040">*</span></div>
+      <div style="display:flex;align-items:center;gap:14px;flex:1;flex-wrap:wrap">
+        <div class="counter">
+          <button class="cbtn" onclick="chg('nb_fen',-1)">−</button>
+          <input class="cinput" type="number" id="nb_fen" value="" placeholder="?" min="0" max="50"/>
+          <button class="cbtn" onclick="chg('nb_fen',1)">+</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <span style="font-size:12px;color:#7a9aaa">environ 1,4 m² par ouverture</span>
+          <a class="jnsp-link" id="fen_btn" onclick="toggleFen()">Je ne sais pas</a>
+        </div>
+      </div>
     </div>
     <div class="q-sep"></div>
     <div class="q-row">
