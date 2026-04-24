@@ -1084,6 +1084,7 @@ function computeEP(p) {
 }
 
 // ── Scénarios d'amélioration ─────────────────────────────────────────────────
+let _nb_fen = 8; // updated before each scenario evaluation from actual user input
 const SCENARIOS = [
   {
     id:"combles", nom:"Isolation des combles / toiture", pack:false,
@@ -1114,8 +1115,8 @@ const SCENARIOS = [
     travaux:"Menuiseries double vitrage à faible émissivité (Low-E), Uw ≤ 1,3 W/m²·K. Réduit les pertes vitrage de 40–60 %. Coût : 600–1 500 €/fenêtre.",
     overrides:{ vit_v:"double_lowe" },
     aide:"CEE",
-    cout:(Sh)=>{ const n=Math.max(4,Math.round(Sh/12)); return [n*600, n*1500]; },
-    aideCalc:(cat,Sh)=>{ const n=Math.max(4,Math.round(Sh/12)); return [n*60, n*90]; }
+    cout:(Sh)=>{ const n=_nb_fen; return [n*600, n*1500]; },
+    aideCalc:(cat,Sh)=>{ const n=_nb_fen; return [n*60, n*90]; }
   },
   {
     id:"pac", nom:"Pompe à chaleur air/eau + chauffe-eau thermodynamique", pack:false,
@@ -1138,15 +1139,15 @@ const SCENARIOS = [
     travaux:"ITE + isolation combles (R ≥ 7) + double vitrage Low-E. Réduit fortement les déperditions sans toucher au système de chauffage.",
     overrides:{ murs_v:"isole_ext", ph_v:"isole_200mm", vit_v:"double_lowe" },
     aide:"MaPrimeRénov' + CEE",
-    cout:(Sh,nb_et)=>{ const s=Sh/nb_et; const Sm=Math.round(4*Math.sqrt(s)*2.5*nb_et); const n=Math.max(4,Math.round(Sh/12)); return [Sm*110+Math.max(2000,Math.round(s*35))+n*600, Sm*240+Math.max(6000,Math.round(s*90))+n*1500]; },
-    aideCalc:(cat,Sh,nb_et,Smur)=>{ const mpr={tres_modeste:75,modeste:60,intermediaire:40,aise:15}; const r=mpr[cat]||0; const s=Sh/nb_et; const n=Math.max(4,Math.round(Sh/12)); return [Math.round((r+15)*Smur)+Math.round((r+10)*(s))+n*60, Math.round((r+25)*Smur)+Math.round((r+20)*(s))+n*90]; }
+    cout:(Sh,nb_et)=>{ const s=Sh/nb_et; const Sm=Math.round(4*Math.sqrt(s)*2.5*nb_et); const n=_nb_fen; return [Sm*110+Math.max(2000,Math.round(s*35))+n*600, Sm*240+Math.max(6000,Math.round(s*90))+n*1500]; },
+    aideCalc:(cat,Sh,nb_et,Smur)=>{ const mpr={tres_modeste:75,modeste:60,intermediaire:40,aise:15}; const r=mpr[cat]||0; const s=Sh/nb_et; const n=_nb_fen; return [Math.round((r+15)*Smur)+Math.round((r+10)*(s))+n*60, Math.round((r+25)*Smur)+Math.round((r+20)*(s))+n*90]; }
   },
   {
     id:"pack_performance", nom:"Isolation complète + Pompe à chaleur", pack:true,
     travaux:"ITE + isolation combles + vitrage Low-E + PAC air/eau + chauffe-eau thermodynamique. Combinaison la plus efficace pour une rénovation partielle ambitieuse.",
     overrides:{ murs_v:"isole_ext", ph_v:"isole_200mm", vit_v:"double_lowe", ch_v:"pac_air_eau", ecs_v:"thermodynamique" },
     aide:"MaPrimeRénov' + CEE",
-    cout:(Sh,nb_et)=>{ const s=Sh/nb_et; const Sm=Math.round(4*Math.sqrt(s)*2.5*nb_et); const n=Math.max(4,Math.round(Sh/12)); return [Sm*110+Math.max(2000,Math.round(s*35))+n*600+10000, Sm*240+Math.max(6000,Math.round(s*90))+n*1500+18000]; },
+    cout:(Sh,nb_et)=>{ const s=Sh/nb_et; const Sm=Math.round(4*Math.sqrt(s)*2.5*nb_et); const n=_nb_fen; return [Sm*110+Math.max(2000,Math.round(s*35))+n*600+10000, Sm*240+Math.max(6000,Math.round(s*90))+n*1500+18000]; },
     aideCalc:(cat,Sh,nb_et,Smur,cMin,cMax)=>{ const rates={tres_modeste:0.55,modeste:0.45,intermediaire:0.35,aise:0.20}; const r=rates[cat]||0.30; return [Math.round(cMin*r), Math.round(cMax*r)]; }
   },
   {
@@ -1154,15 +1155,15 @@ const SCENARIOS = [
     travaux:"Isolation des combles (R ≥ 7) + double vitrage Low-E + VMC double flux. Combinaison efficace et accessible.",
     overrides:{ ph_v:"isole_200mm", vit_v:"double_lowe", vmc_v:"vmc_df" },
     aide:"MaPrimeRénov' + CEE",
-    cout:(Sh,nb_et)=>{ const s=Sh/nb_et; const n=Math.max(4,Math.round(Sh/12)); return [Math.max(2000,Math.round(s*35))+n*600+7000, Math.max(6000,Math.round(s*90))+n*1500+10000]; },
-    aideCalc:(cat,Sh,nb_et)=>{ const mpr={tres_modeste:75,modeste:60,intermediaire:40,aise:15}; const r=mpr[cat]||0; const s=Sh/nb_et; const n=Math.max(4,Math.round(Sh/12)); const va={tres_modeste:2500,modeste:2000,intermediaire:1500,aise:500}; const a=va[cat]||800; return [Math.round(r*s*0.9)+n*60+a, Math.round(r*s)+n*90+a+300]; }
+    cout:(Sh,nb_et)=>{ const s=Sh/nb_et; const n=_nb_fen; return [Math.max(2000,Math.round(s*35))+n*600+7000, Math.max(6000,Math.round(s*90))+n*1500+10000]; },
+    aideCalc:(cat,Sh,nb_et)=>{ const mpr={tres_modeste:75,modeste:60,intermediaire:40,aise:15}; const r=mpr[cat]||0; const s=Sh/nb_et; const n=_nb_fen; const va={tres_modeste:2500,modeste:2000,intermediaire:1500,aise:500}; const a=va[cat]||800; return [Math.round(r*s*0.9)+n*60+a, Math.round(r*s)+n*90+a+300]; }
   },
   {
     id:"pack_global", nom:"Rénovation globale d'ampleur", pack:true,
     travaux:"Isolation combles + murs ITE + vitrage Low-E + pompe à chaleur + VMC DF + plancher bas. Éligible MaPrimeRénov' Accompagné.",
     overrides:{ ph_v:"isole_200mm", murs_v:"isole_ext", vit_v:"double_lowe", ch_v:"pac_air_eau", vmc_v:"vmc_df", ecs_v:"thermodynamique", pb_v:"isole_100mm" },
     aide:"MaPrimeRénov' Accompagné",
-    cout:(Sh,nb_et)=>{ const s=Sh/nb_et; const Sm=Math.round(4*Math.sqrt(s)*2.5*nb_et); const n=Math.max(4,Math.round(Sh/12)); return [Math.max(2000,Math.round(s*35))+Sm*110+n*600+10000+7000+Math.round(s*15), Math.max(6000,Math.round(s*90))+Sm*240+n*1500+18000+10000+Math.round(s*40)]; },
+    cout:(Sh,nb_et)=>{ const s=Sh/nb_et; const Sm=Math.round(4*Math.sqrt(s)*2.5*nb_et); const n=_nb_fen; return [Math.max(2000,Math.round(s*35))+Sm*110+n*600+10000+7000+Math.round(s*15), Math.max(6000,Math.round(s*90))+Sm*240+n*1500+18000+10000+Math.round(s*40)]; },
     aideCalc:(cat,Sh,nb_et,Smur,cMin,cMax)=>{ const rates={tres_modeste:0.70,modeste:0.60,intermediaire:0.45,aise:0.30}; const r=rates[cat]||0.40; return [Math.round(Math.min(cMin*r,70000)), Math.round(Math.min(cMax*r,70000))]; }
   },
 ];
@@ -1299,7 +1300,7 @@ function calculer() {
 
   const nf=document.getElementById("nb_fen").value;
   let Svit;
-  if(fen_inconnu===null||fen_inconnu===true||!nf){ const e=Math.round(Sh/8); Svit=e*1.4; hyp.push(`Fenêtres : ${e} ouvertures estimées`); }
+  if(fen_inconnu===null||fen_inconnu===true||!nf){ const e=Math.max(4,Math.round(Sh/12)); Svit=e*1.4; hyp.push(`Fenêtres : ${e} ouvertures estimées`); }
   else Svit=parseFloat(nf)*1.4;
 
   const BASE = { Sh, zone, nb_et, forme_f, mur_exp_f, b_pb, sph_factor, Svit,
@@ -1386,6 +1387,9 @@ function calculer() {
   const catLabels = {tres_modeste:"Revenus très modestes",modeste:"Revenus modestes",intermediaire:"Revenus intermédiaires",aise:"Revenus aisés"};
 
   // Scénarios d'amélioration
+  _nb_fen = (!fen_inconnu && document.getElementById("nb_fen").value)
+    ? Math.max(1, parseInt(document.getElementById("nb_fen").value))
+    : Math.max(4, Math.round(Sh/12));
   const PRIX_KWH = {elec:0.2516, gaz:0.1292, fioul:0.138, bois:0.065, reseau_chaleur:0.095};
   const ORDER="ABCDEFG";
   const curIdx=ORDER.indexOf(cl);
@@ -1507,11 +1511,10 @@ function calculer() {
     const total = cards.length;
     document.getElementById("r_travaux_count").textContent = `${total} option${total>1?"s":""}`;
     html += `<div style="margin-top:20px;padding:0 2px">
-      <button class="btn-artisan-link" onclick="contactArtisanDevis()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#0063CB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8 19.79 19.79 0 010.18 1.18 2 2 0 012.18 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.15a16 16 0 006.29 6.29l1.42-1.42a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.09v2.83z"/></svg>
-        Être contacté par un artisan agréé RGE — Devis gratuit
+      <button class="btn-dpe-expert" onclick="contactArtisanDevis()" style="max-width:100%">
+        <div class="btn-dpe-expert-ico"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8 19.79 19.79 0 010.18 1.18 2 2 0 012.18 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.15a16 16 0 006.29 6.29l1.42-1.42a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.09v2.83z"/></svg></div>
+        <div class="btn-dpe-expert-txt">Être contacté par un artisan agréé RGE<span class="btn-dpe-expert-sub">Devis gratuit · Sans engagement · Réponse sous 24h</span></div>
       </button>
-      <div class="btn-artisan-link-note">Sans engagement · Réponse sous 24h</div>
     </div>`;
     container.innerHTML = html;
   }
