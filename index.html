@@ -439,23 +439,6 @@
       <div class="q-options" id="opt_position_appart"></div>
     </div>
     <div class="q-sep hidden" id="sep_position_appart"></div>
-    <div class="q-row">
-      <div class="q-label">Travaux dans les 10 dernières années ?</div>
-      <div class="q-options" id="opt_travaux_recents"></div>
-    </div>
-    <div class="q-row hidden" id="row_travaux_types">
-      <div class="q-label">Types de travaux réalisés</div>
-      <div class="travaux-grid" id="travaux_types_grid">
-        <label class="travaux-item" onclick="toggleTravaux(this,'murs')">Isolation des murs</label>
-        <label class="travaux-item" onclick="toggleTravaux(this,'toiture')">Isolation de la toiture</label>
-        <label class="travaux-item" onclick="toggleTravaux(this,'plancher')">Isolation du plancher</label>
-        <label class="travaux-item" onclick="toggleTravaux(this,'vitrage')">Remplacement des fenêtres</label>
-        <label class="travaux-item" onclick="toggleTravaux(this,'vmc')">Installation d'une VMC</label>
-        <label class="travaux-item" onclick="toggleTravaux(this,'chaudiere_cond')">Chaudière à condensation</label>
-        <label class="travaux-item" onclick="toggleTravaux(this,'pac')">Pompe à chaleur</label>
-        <label class="travaux-item" onclick="toggleTravaux(this,'chauffe_eau_thermo')">Chauffe-eau thermodynamique</label>
-      </div>
-    </div>
     <div class="nav-row">
       <button class="btn-back" onclick="goStep(1)">← Retour</button>
       <button class="btn-next" onclick="goStep(3)">Continuer →</button>
@@ -520,11 +503,6 @@
     <div class="q-row">
       <div class="q-label">Chauffage principal</div>
       <div class="q-options" id="opt_chauffage"></div>
-    </div>
-    <div class="q-sep"></div>
-    <div class="q-row">
-      <div class="q-label">Régulation de la température</div>
-      <div class="q-options" id="opt_regulation"></div>
     </div>
     <div class="q-sep"></div>
     <div class="q-row">
@@ -985,7 +963,7 @@ function goStep(n) {
 }
 
 function restart() {
-  Object.assign(SEL,{type:"",annee:"avant1975",dpe_connu:"non",dpe_actuel:"",forme:"inconnu",etages:"inconnu",etages_appart:"inconnu",mitoyen_maison:"inconnu",position_appart:"inconnu",travaux_recents:"non",murs:"inconnu",pb:"inconnu",ph:"inconnu",vitrage:"inconnu",vmc:"inconnu",chauffage:"inconnu",regulation:"inconnu",ecs:"inconnu",clim:"non"});
+  Object.assign(SEL,{type:"",annee:"avant1975",dpe_connu:"non",dpe_actuel:"",forme:"inconnu",etages:"inconnu",etages_appart:"inconnu",mitoyen_maison:"inconnu",position_appart:"inconnu",travaux_recents:"non",murs:"inconnu",pb:"inconnu",ph:"inconnu",vitrage:"inconnu",vmc:"inconnu",chauffage:"inconnu",regulation:"sans_regulation",ecs:"inconnu",clim:"non"});
   TRAVAUX_SEL.clear(); fen_inconnu=true;
   buildAll();
   document.getElementById("nb_fen").value=""; syncFen();
@@ -1200,7 +1178,6 @@ function calcFiabilite() {
   if(SEL.vitrage==="inconnu") s-=8;
   if(SEL.vmc==="inconnu") s-=5;
   if(SEL.chauffage==="inconnu") s-=12;
-  if(SEL.regulation==="inconnu") s-=5;
   if(SEL.ecs==="inconnu") s-=8;
   if(fen_inconnu===null||fen_inconnu===true) s-=5;
   return Math.max(20, s);
@@ -1303,7 +1280,6 @@ function calculer() {
   if(SEL.vitrage==="inconnu")     hyp.push("Vitrage : double av. 1990");
   if(SEL.vmc==="inconnu")         hyp.push("Ventilation : naturelle");
   if(SEL.chauffage==="inconnu")   hyp.push("Chauffage : chaudière gaz ancienne");
-  if(SEL.regulation==="inconnu")  hyp.push("Régulation : aucune");
   if(SEL.ecs==="inconnu")         hyp.push("ECS : ballon électrique");
 
   // Géométrie
