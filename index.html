@@ -247,7 +247,8 @@
       #step6 { display: block !important; }
       .res-header { border-radius: 4px 4px 0 0; }
       .res-body { box-shadow: none; padding: 10px 14px; }
-      .res-actions, .disclaimer { display: none !important; }
+      .res-actions, .disclaimer, .amelio-card-expand, .btn-artisan, .btn-artisan-link, .btn-artisan-note, .btn-artisan-link-note, .savings-banner { display: none !important; }
+      .amelio-card { cursor: default; pointer-events: none; }
       details.res-detail { display: block !important; }
       details.res-detail summary { display: none !important; }
       details.res-detail > * { display: block !important; }
@@ -1115,18 +1116,18 @@ const SCENARIOS = [
   },
   {
     id:"pac", nom:"Pompe à chaleur air/eau + chauffe-eau thermodynamique", pack:false,
-    travaux:"PAC air/eau (SCOP ≥ 4) remplaçant la chaudière + chauffe-eau thermodynamique. Divise la facture de chauffage par 3. Coût : 10 000–18 000 €.",
+    travaux:"PAC air/eau (SCOP ≥ 4) remplaçant la chaudière + chauffe-eau thermodynamique. Divise la facture de chauffage par 3. Coût : variable selon surface (8 000–12 000 € pour un petit logement, jusqu'à 20 000 € pour une grande maison).",
     overrides:{ ch_v:"pac_air_eau", ecs_v:"thermodynamique" },
     aide:"MaPrimeRénov'",
-    cout:()=>[10000,18000],
+    cout:(Sh)=>{ return [Math.round(Math.max(8000, 6000 + Sh*50)), Math.round(Math.max(12000, 8000 + Sh*80))]; },
     aideCalc:(cat)=>{ const amt={tres_modeste:9000,modeste:7000,intermediaire:4500,aise:2500}; const a=amt[cat]||3000; return [Math.round(a*0.9), a]; }
   },
   {
     id:"vmc", nom:"VMC double flux", pack:false,
-    travaux:"Ventilation mécanique double flux avec échangeur thermique (η ≥ 85 %). Récupère la chaleur de l'air extrait. Coût : 7 000–10 000 €.",
+    travaux:"Ventilation mécanique double flux avec échangeur thermique (η ≥ 85 %). Récupère la chaleur de l'air extrait. Coût : variable selon surface (3 500–6 000 € pour un petit logement, jusqu'à 14 000 € pour une grande maison).",
     overrides:{ vmc_v:"vmc_df" },
     aide:"MaPrimeRénov'",
-    cout:()=>[7000,10000],
+    cout:(Sh)=>{ return [Math.round(Math.max(3500, 2000 + Sh*35)), Math.round(Math.max(5500, 3000 + Sh*55))]; },
     aideCalc:(cat)=>{ const amt={tres_modeste:2500,modeste:2000,intermediaire:1500,aise:500}; const a=amt[cat]||800; return [a, a+300]; }
   },
   {
@@ -1142,7 +1143,7 @@ const SCENARIOS = [
     travaux:"ITE + isolation combles + vitrage Low-E + PAC air/eau + chauffe-eau thermodynamique. Combinaison la plus efficace pour une rénovation partielle ambitieuse.",
     overrides:{ murs_v:"isole_ext", ph_v:"isole_200mm", vit_v:"double_lowe", ch_v:"pac_air_eau", ecs_v:"thermodynamique" },
     aide:"MaPrimeRénov' + CEE",
-    cout:(Sh,nb_et)=>{ const s=Sh/nb_et; const Sm=Math.round(4*Math.sqrt(s)*2.5*nb_et); const n=_nb_fen; return [Sm*110+Math.max(2000,Math.round(s*35))+n*600+10000, Sm*240+Math.max(6000,Math.round(s*90))+n*1500+18000]; },
+    cout:(Sh,nb_et)=>{ const s=Sh/nb_et; const Sm=Math.round(4*Math.sqrt(s)*2.5*nb_et); const n=_nb_fen; const pacMin=Math.round(Math.max(8000, 6000 + Sh*50)); const pacMax=Math.round(Math.max(12000, 8000 + Sh*80)); return [Sm*110+Math.max(2000,Math.round(s*35))+n*600+pacMin, Sm*240+Math.max(6000,Math.round(s*90))+n*1500+pacMax]; },
     aideCalc:(cat,Sh,nb_et,Smur,cMin,cMax)=>{ const rates={tres_modeste:0.55,modeste:0.45,intermediaire:0.35,aise:0.20}; const r=rates[cat]||0.30; return [Math.round(cMin*r), Math.round(cMax*r)]; }
   },
   {
@@ -1150,7 +1151,7 @@ const SCENARIOS = [
     travaux:"Isolation des combles (R ≥ 7) + double vitrage Low-E + VMC double flux. Combinaison efficace et accessible.",
     overrides:{ ph_v:"isole_200mm", vit_v:"double_lowe", vmc_v:"vmc_df" },
     aide:"MaPrimeRénov' + CEE",
-    cout:(Sh,nb_et)=>{ const s=Sh/nb_et; const n=_nb_fen; return [Math.max(2000,Math.round(s*35))+n*600+7000, Math.max(6000,Math.round(s*90))+n*1500+10000]; },
+    cout:(Sh,nb_et)=>{ const s=Sh/nb_et; const n=_nb_fen; const vmcMin=Math.round(Math.max(3500, 2000 + Sh*35)); const vmcMax=Math.round(Math.max(5500, 3000 + Sh*55)); return [Math.max(2000,Math.round(s*35))+n*600+vmcMin, Math.max(6000,Math.round(s*90))+n*1500+vmcMax]; },
     aideCalc:(cat,Sh,nb_et)=>{ const mpr={tres_modeste:75,modeste:60,intermediaire:40,aise:15}; const r=mpr[cat]||0; const s=Sh/nb_et; const n=_nb_fen; const va={tres_modeste:2500,modeste:2000,intermediaire:1500,aise:500}; const a=va[cat]||800; return [Math.round(r*s*0.9)+n*60+a, Math.round(r*s)+n*90+a+300]; }
   },
   {
@@ -1158,7 +1159,7 @@ const SCENARIOS = [
     travaux:"Isolation combles + murs ITE + vitrage Low-E + pompe à chaleur + VMC DF + plancher bas. Éligible MaPrimeRénov' Accompagné.",
     overrides:{ ph_v:"isole_200mm", murs_v:"isole_ext", vit_v:"double_lowe", ch_v:"pac_air_eau", vmc_v:"vmc_df", ecs_v:"thermodynamique", pb_v:"isole_100mm" },
     aide:"MaPrimeRénov' Accompagné",
-    cout:(Sh,nb_et)=>{ const s=Sh/nb_et; const Sm=Math.round(4*Math.sqrt(s)*2.5*nb_et); const n=_nb_fen; return [Math.max(2000,Math.round(s*35))+Sm*110+n*600+10000+7000+Math.round(s*15), Math.max(6000,Math.round(s*90))+Sm*240+n*1500+18000+10000+Math.round(s*40)]; },
+    cout:(Sh,nb_et)=>{ const s=Sh/nb_et; const Sm=Math.round(4*Math.sqrt(s)*2.5*nb_et); const n=_nb_fen; const pacMin=Math.round(Math.max(8000, 6000 + Sh*50)); const pacMax=Math.round(Math.max(12000, 8000 + Sh*80)); const vmcMin=Math.round(Math.max(3500, 2000 + Sh*35)); const vmcMax=Math.round(Math.max(5500, 3000 + Sh*55)); return [Math.max(2000,Math.round(s*35))+Sm*110+n*600+pacMin+vmcMin+Math.round(s*15), Math.max(6000,Math.round(s*90))+Sm*240+n*1500+pacMax+vmcMax+Math.round(s*40)]; },
     aideCalc:(cat,Sh,nb_et,Smur,cMin,cMax)=>{ const rates={tres_modeste:0.70,modeste:0.60,intermediaire:0.45,aise:0.30}; const r=rates[cat]||0.40; return [Math.round(Math.min(cMin*r,70000)), Math.round(Math.min(cMax*r,70000))]; }
   },
 ];
@@ -1242,6 +1243,65 @@ function contactExpert() {
   alert(`Demande de diagnostic DPE envoyée.\nNous vous contacterons${phone?" au "+phone:email?" par email":""}.\nRéponse sous 24h.`);
 }
 
+// ── Google Sheets Data Collection ────────────────────────────────────────────
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzZwV81EOXPTa8QMxPoCi3GWiRApuqBYydFnmp2U1xRlhHqgySn5xOEs8pkeSK-cGOwQw/exec";
+
+async function sendToSheets(cl, res, fiab) {
+  if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === "COLLER_VOTRE_URL_ICI") return;
+  try {
+    let ip = "";
+    try {
+      const r = await fetch("https://api.ipify.org?format=json");
+      ip = (await r.json()).ip || "";
+    } catch(e) {}
+
+    const params = new URLSearchParams(window.location.search);
+    const data = {
+      timestamp:           new Date().toLocaleString("fr-FR"),
+      email:               document.getElementById("contact_email").value.trim(),
+      telephone:           document.getElementById("contact_phone").value.trim(),
+      statut:              SEL.statut,
+      type_logement:       SEL.type,
+      surface:             document.getElementById("surface").value,
+      departement:         document.getElementById("departement").value,
+      annee_construction:  SEL.annee,
+      nb_occupants:        document.getElementById("nb_occupants").value,
+      revenu_fiscal:       document.getElementById("revenu_fiscal").value,
+      categorie_revenus:   calcCategorie(
+                             document.getElementById("revenu_fiscal").value,
+                             parseInt(document.getElementById("nb_occupants").value)||1,
+                             document.getElementById("departement").value),
+      dpe_connu:           SEL.dpe_connu,
+      dpe_actuel:          SEL.dpe_actuel || "",
+      dpe_estime:          cl,
+      ep_kwh:              res ? Math.round(res.ep) : "",
+      ges_kgco2:           res ? res.ges.toFixed(1) : "",
+      fiabilite_pct:       fiab || "",
+      chauffage:           SEL.chauffage,
+      ecs:                 SEL.ecs,
+      isolation_murs:      SEL.murs,
+      isolation_pb:        SEL.pb,
+      isolation_ph:        SEL.ph,
+      vitrage:             SEL.vitrage,
+      vmc:                 SEL.vmc,
+      travaux_recents:     SEL.travaux_recents,
+      travaux_realises:    Array.from(TRAVAUX_SEL).join(", "),
+      ip_address:          ip,
+      user_agent:          navigator.userAgent,
+      screen:              window.screen.width + "x" + window.screen.height,
+      referrer:            document.referrer || "",
+      page_url:            window.location.href,
+      utm_source:          params.get("utm_source") || "",
+      utm_medium:          params.get("utm_medium") || "",
+      utm_campaign:        params.get("utm_campaign") || "",
+    };
+
+    const form = new FormData();
+    form.append("data", JSON.stringify(data));
+    fetch(APPS_SCRIPT_URL, { method: "POST", body: form, mode: "no-cors" });
+  } catch(e) { /* silencieux */ }
+}
+
 function calculer() {
   const Sh  = parseFloat(document.getElementById("surface").value)||80;
   const dep = document.getElementById("departement").value;
@@ -1307,6 +1367,7 @@ function calculer() {
   const useDeclared = SEL.dpe_connu==="oui" && SEL.dpe_actuel;
   const cl = useDeclared ? SEL.dpe_actuel : res.cl;
 
+  sendToSheets(cl, res, fiab);
   goStep(6);
 
   // Affichage score
